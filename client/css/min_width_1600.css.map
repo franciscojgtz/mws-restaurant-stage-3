@@ -1,0 +1,1 @@
+{"version":3,"sources":["min_width_1600.scss"],"names":[],"mappings":"AAKE,yBACE,aAAa,AACb,aAAc,CACf","file":"min_width_1600.css","sourcesContent":[".breadcrumb {\r\n    width: 1600px;\r\n    margin: 0 auto;\r\n  }\r\n\r\n  .maincontent {\r\n    width: 1600px;\r\n    margin: 0 auto;\r\n  }"]}

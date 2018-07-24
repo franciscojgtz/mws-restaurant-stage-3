@@ -1,0 +1,22 @@
+  .filter-options select {
+    margin: 2rem;
+    width: calc(50% - 4rem);
+  }
+
+  .reviews-list li{
+    width: calc(50% - 2rem);
+    margin: 1rem;
+  }
+
+  .reviews-list li:nth-child(odd) {
+    margin: 1rem;
+  }
+
+  .restaurants-list li{
+    width: calc(50% - 2rem);
+    margin: 1rem;
+  }
+
+  .restaurants-list li:nth-child(odd) {
+    margin: 1rem;
+  }

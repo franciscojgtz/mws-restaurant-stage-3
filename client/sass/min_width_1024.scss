@@ -1,0 +1,33 @@
+  .inside .map-container {
+    width: 50%;
+    height: auto;
+  }
+
+  .inside .restaurant-container {
+    width: 50%;
+    margin-top: 120px;
+  }
+
+  .filter-options h3 {
+    text-align: center;
+  }
+
+  .filter-options h3, .filter-options select {
+    width: calc(33.3333% - 4rem);
+    margin: 2rem;
+  }
+
+  .restaurants-list li {
+    width: calc(33.3333% - 2rem);
+    margin: 1rem;
+  }
+
+  .reviews-list li{
+    width: calc(33.3333% - 2rem);
+    margin: 1rem;
+  }
+
+  .inside .restaurant-img {
+    width: 100%;
+    float: none;
+  }
