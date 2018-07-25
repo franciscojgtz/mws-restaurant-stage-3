@@ -1,5 +1,6 @@
 let restaurant;
 let newMap;
+let reviews;
 
 /**
  * Initialize map as soon as the page is loaded.
@@ -29,7 +30,8 @@ const initMap = () => {
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         id: 'mapbox.streets',
       }).addTo(newMap);
-      setTimeout(() => { newMap.invalidateSize(); }, 400);
+      requestAnimationFrame(() => { newMap.invalidateSize(); });
+      //setTimeout(() => { newMap.invalidateSize(); }, 400);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
@@ -55,7 +57,11 @@ const fetchRestaurantFromURL = (callback) => {
         console.error(error);
         return;
       }
-      fillRestaurantHTML();
+      //fetch the reviews from the network
+      fetchReviewsByRestaurantID(restaurant.id, (error, reviews) => {
+        self.reviews = reviews;
+        fillRestaurantHTML();
+      });
       callback(null, restaurant);
     });
   }
@@ -107,9 +113,18 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
 };
 
 /**
+ * Fetch Reviews by restaurant id from network
+ */
+const fetchReviewsByRestaurantID = (restaurantID, callback) => {
+  DBHelper.fetchReviewsByID(restaurantID, (error, reviews) => {
+    callback(null, reviews);
+  });
+};
+
+/**
  * Create all reviews HTML and add them to the webpage.
  */
-const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+const fillReviewsHTML = (reviews = self.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h3');
   title.innerHTML = 'Reviews';

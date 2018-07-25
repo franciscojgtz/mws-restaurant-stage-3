@@ -39,6 +39,18 @@ class DBHelper {
   }
 
   /**
+   * Fetch reviews by restaurant ID
+   */
+  static fetchReviewsByID(restaurantID, callback) {
+    fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantID}`)
+      .then(response => response.json())
+      .then((fetchedReview) => {
+        console.log('reviews from fetch');
+        callback(null, fetchedReview);
+      });
+  }
+
+  /**
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
