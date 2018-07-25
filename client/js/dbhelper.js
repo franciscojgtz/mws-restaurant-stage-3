@@ -253,10 +253,17 @@ var DBHelper = function () {
       if (!navigator.serviceWorker) {
         return Promise.resolve();
       }
-      return idb.open('restaurants-reviews', 1, function (upgradeDb) {
-        var store = upgradeDb.createObjectStore('restaurants', {
-          keyPath: 'id'
-        });
+      return idb.open('restaurants-reviews', 2, function (upgradeDb) {
+        switch (upgradeDb.oldVersion) {
+          case 0:
+            var store = upgradeDb.createObjectStore('restaurants', {
+              keyPath: 'id'
+            });
+          case 1:
+            var reviewStore = upgradeDb.createObjectStore('reviews', {
+              keyPath: 'id'
+            });
+        }
       });
     }
 

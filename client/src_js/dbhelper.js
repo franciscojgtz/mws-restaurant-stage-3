@@ -197,10 +197,17 @@ class DBHelper {
     if (!navigator.serviceWorker) {
       return Promise.resolve();
     }
-    return idb.open('restaurants-reviews', 1, (upgradeDb) => {
-      const store = upgradeDb.createObjectStore('restaurants', {
-        keyPath: 'id',
-      });
+    return idb.open('restaurants-reviews', 2, (upgradeDb) => {
+      switch (upgradeDb.oldVersion) {
+        case 0:
+          const store = upgradeDb.createObjectStore('restaurants', {
+            keyPath: 'id',
+          });
+        case 1: 
+          const reviewStore = upgradeDb.createObjectStore('reviews', {
+          keyPath: 'id',
+        });
+      }
     });
   }
 
