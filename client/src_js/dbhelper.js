@@ -44,9 +44,10 @@ class DBHelper {
   static fetchReviewsByID(restaurantID, callback) {
     fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantID}`)
       .then(response => response.json())
-      .then((fetchedReview) => {
+      .then((fetchedReviews) => {
+        DBHelper.placeReviewsIntoIDB(fetchedReviews);
         console.log('reviews from fetch');
-        callback(null, fetchedReview);
+        callback(null, fetchedReviews);
       });
   }
 
@@ -223,6 +224,22 @@ class DBHelper {
       const restaurantsStore = tx.objectStore('restaurants');
       restaurants.forEach((restaurant) => {
         restaurantsStore.put(restaurant);
+      });
+    });
+  }
+
+  /**
+   * Add or Update Reviews in IDB
+   * @param {*} reviews
+   */
+  static placeReviewsIntoIDB(reviews) {
+    const dbPromise = DBHelper.openIDB();
+    dbPromise.then((db) => {
+      if (!db) return;
+      const tx = db.transaction('reviews', 'readwrite');
+      const reviewsStore = tx.objectStore('reviews');
+      reviews.forEach((reviews) => {
+        reviewsStore.put(reviews);
       });
     });
   }

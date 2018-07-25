@@ -51,9 +51,10 @@ var DBHelper = function () {
     value: function fetchReviewsByID(restaurantID, callback) {
       fetch('http://localhost:1337/reviews/?restaurant_id=' + restaurantID).then(function (response) {
         return response.json();
-      }).then(function (fetchedReview) {
+      }).then(function (fetchedReviews) {
+        DBHelper.placeReviewsIntoIDB(fetchedReviews);
         console.log('reviews from fetch');
-        callback(null, fetchedReview);
+        callback(null, fetchedReviews);
       });
     }
 
@@ -282,6 +283,25 @@ var DBHelper = function () {
         var restaurantsStore = tx.objectStore('restaurants');
         restaurants.forEach(function (restaurant) {
           restaurantsStore.put(restaurant);
+        });
+      });
+    }
+
+    /**
+     * Add or Update Reviews in IDB
+     * @param {*} reviews
+     */
+
+  }, {
+    key: 'placeReviewsIntoIDB',
+    value: function placeReviewsIntoIDB(reviews) {
+      var dbPromise = DBHelper.openIDB();
+      dbPromise.then(function (db) {
+        if (!db) return;
+        var tx = db.transaction('reviews', 'readwrite');
+        var reviewsStore = tx.objectStore('reviews');
+        reviews.forEach(function (reviews) {
+          reviewsStore.put(reviews);
         });
       });
     }
