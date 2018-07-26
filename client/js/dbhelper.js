@@ -49,12 +49,20 @@ var DBHelper = function () {
   }, {
     key: 'fetchReviewsByID',
     value: function fetchReviewsByID(restaurantID, callback) {
-      fetch('http://localhost:1337/reviews/?restaurant_id=' + restaurantID).then(function (response) {
-        return response.json();
-      }).then(function (fetchedReviews) {
-        DBHelper.placeReviewsIntoIDB(fetchedReviews);
-        console.log('reviews from fetch');
-        callback(null, fetchedReviews);
+      this.showCachedReviewsByRestaurantID(restaurantID).then(function (cachedReviews) {
+        if (cachedReviews === undefined || cachedReviews.length === 0) {
+          // array empty or does not exist
+          fetch('http://localhost:1337/reviews/?restaurant_id=' + restaurantID).then(function (response) {
+            return response.json();
+          }).then(function (fetchedReviews) {
+            DBHelper.placeReviewsIntoIDB(fetchedReviews);
+            console.log('reviews from fetch');
+            callback(null, fetchedReviews);
+          });
+        } else {
+          console.log('reviews from cache');
+          callback(null, cachedReviews);
+        }
       });
     }
 
@@ -261,9 +269,10 @@ var DBHelper = function () {
               keyPath: 'id'
             });
           case 1:
-            var reviewStore = upgradeDb.createObjectStore('reviews', {
+            var reviewsStore = upgradeDb.createObjectStore('reviews', {
               keyPath: 'id'
             });
+            reviewsStore.createIndex('restaurant', 'restaurant_id');
         }
       });
     }
@@ -288,7 +297,7 @@ var DBHelper = function () {
     }
 
     /**
-     * Add or Update Reviews in IDB
+     * Place Reviews in IDB
      * @param {*} reviews
      */
 
@@ -305,6 +314,11 @@ var DBHelper = function () {
         });
       });
     }
+
+    /**
+     * Show Cached Restaurants
+     */
+
   }, {
     key: 'showCachedRestaurants',
     value: function showCachedRestaurants() {
@@ -314,6 +328,24 @@ var DBHelper = function () {
         var data = db.transaction('restaurants').objectStore('restaurants');
         return data.getAll().then(function (restaurants) {
           return restaurants;
+        });
+      });
+    }
+
+    /**
+     * Show Cached Reviews By Restaurant ID
+     */
+
+  }, {
+    key: 'showCachedReviewsByRestaurantID',
+    value: function showCachedReviewsByRestaurantID(restaurantID) {
+      var dbPromise = DBHelper.openIDB();
+      return dbPromise.then(function (db) {
+        if (!db) return Promise.resolve();
+        var data = db.transaction('reviews').objectStore('reviews');
+        var restaurantIndex = data.index('restaurant');
+        return restaurantIndex.getAll(restaurantID).then(function (reviews) {
+          return reviews;
         });
       });
     }

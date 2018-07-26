@@ -252,3 +252,70 @@ function createResponsiveImage(restaurant) {
   image.srcset = restImg + '_300.webp 300w, ' + restImg + '_350.webp 350w, ' + restImg + '_400.webp 400w, ' + restImg + '_450.webp 450w, ' + restImg + '_500.webp 500w, ' + restImg + '_550.webp 550w, ' + restImg + '_600.webp 600w, ' + restImg + '_700.webp 700w, ' + restImg + '_800.webp 800w';
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
+
+function notifySWUpdates(reg) {
+  console.log('There is a new Service Worker available');
+  // create button
+  var buttonSW = document.createElement('button');
+  buttonSW.classList.add('sw-button');
+  buttonSW.innerHTML = 'Update Available';
+  // append button
+  var docBody = document.getElementsByTagName('body')[0];
+  docBody.appendChild(buttonSW);
+  // onclick, post message
+  buttonSW.addEventListener('click', function () {
+    reg.postMessage({ activate: 'true' });
+  });
+}
+
+function trackSWStates(reg) {
+  var _this = this;
+
+  reg.addEventListener('statechange', function () {
+    if (_this.state == 'installed') {
+      notifySWUpdates(reg);
+    }
+  });
+}
+
+/**
+ * This function registers the service worker
+*/
+function registerServiceWorker() {
+  navigator.serviceWorker.register('sw.js').then(function (reg) {
+    // refers to the SW that controls this page
+    if (!navigator.serviceWorker.controller) {
+      // page didn't load using a SW
+      // loaded from the network
+      return;
+    }
+
+    if (reg.waiting) {
+      // there's an update ready!
+      notifySWUpdates(reg.waiting);
+    }
+
+    if (reg.installing) {
+      // there's an update in progress
+      trackSWStates(reg.installing);
+    }
+
+    reg.addEventListener('updatefound', function () {
+      trackSWStates(reg.installing);
+    });
+
+    var reloading = void 0;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (reloading) return;
+      window.location.reload();
+      reloading = true;
+    });
+  }).catch(function (err) {
+    console.log('SW failed: ', err);
+  });
+}
+
+/**
+ * Add service worker.
+ */
+registerServiceWorker();
