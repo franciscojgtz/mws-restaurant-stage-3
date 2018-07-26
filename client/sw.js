@@ -36,24 +36,15 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
 
-  if (requestUrl.origin === location.origin) {
-    if (requestUrl.pathname.startsWith('/restaurant.html')) {
-       console.log(requestUrl.pathname);
-      //event.respondWith(caches.match('/restaurant.html?id=1'));
-      //return;
-    }
-  }
-
   if (requestUrl.pathname.startsWith('/img/')) {
     event.respondWith(servePhoto(event.request));
     return;
   }
 
-  event.respondWith(caches.match(event.request)
+  event.respondWith(caches.match(event.request, { ignoreSearch: true })
     .then(cachedResponse => cachedResponse || fetch(event.request))
     .catch((err) => {
       console.log(err);
-      console.log(event.request);
     }));
 });
 
