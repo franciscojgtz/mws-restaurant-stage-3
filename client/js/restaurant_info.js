@@ -164,7 +164,9 @@ var createReviewHTML = function createReviewHTML(review) {
   li.appendChild(name);
 
   var date = document.createElement('p');
-  date.innerHTML = review.date;
+  var updatedAt = review.updatedAt;
+  var updatedDate = timeConverter(updatedAt);
+  date.innerHTML = updatedDate;
   li.appendChild(date);
 
   var rating = document.createElement('p');
@@ -176,6 +178,21 @@ var createReviewHTML = function createReviewHTML(review) {
   li.appendChild(comments);
 
   return li;
+};
+
+/**
+ * convert 13 digit timestamp into month day, year
+ * @param {13 digittimestamp} t
+ * @returns {month day, year}
+ */
+var timeConverter = function timeConverter(t) {
+  var a = new Date(t);
+  var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'Septemeber', 'October', 'November', 'December'];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate();
+
+  return month + ' ' + date + ', ' + year;
 };
 
 /**

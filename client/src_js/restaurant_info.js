@@ -153,7 +153,9 @@ const createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  const updatedAt = review.updatedAt;
+  const updatedDate= timeConverter(updatedAt);
+  date.innerHTML = updatedDate;
   li.appendChild(date);
 
   const rating = document.createElement('p');
@@ -165,6 +167,22 @@ const createReviewHTML = (review) => {
   li.appendChild(comments);
 
   return li;
+};
+
+
+/**
+ * convert 13 digit timestamp into month day, year
+ * @param {13 digittimestamp} t
+ * @returns {month day, year}
+ */
+const timeConverter = (t) => {
+  const a = new Date(t);
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'Septemeber', 'October', 'November', 'December'];
+  const year = a.getFullYear();
+  const month = months[a.getMonth()];
+  const date = a.getDate();
+
+  return `${month} ${date}, ${year}`;
 };
 
 /**
