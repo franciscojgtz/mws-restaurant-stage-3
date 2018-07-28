@@ -60,8 +60,17 @@
     </section>
     <!-- End reviews -->
     <!-- Add Reviews Form-->
-    <form>
-      Name: <input type="text" name="firstname">
+    <!--TO DO
+      add label
+    -->
+    <form action="" method="post">
+      <fieldset>
+        <legend>Submit Review</legend>
+        Name: <input type="text" name="name"><br />
+        Rating: <input type="number" name="rating" min="1" max="5"><br />
+        <textarea></textarea><br />
+        <input type="submit" value="Submit">
+      </fieldset>
     </form>
     <!-- End Reviews Form-->
   </main>
