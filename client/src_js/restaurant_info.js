@@ -116,9 +116,32 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
  * Fetch Reviews by restaurant id from network
  */
 const fetchReviewsByRestaurantID = (restaurantID, callback) => {
-  DBHelper.fetchReviewsByID(restaurantID, (error, reviews) => {
+  DBHelper.fetchReviewsByRestaurantID(restaurantID, (error, reviews) => {
     callback(null, reviews);
   });
+};
+
+const postReview = () => {
+  const opts = {
+    restaurant_id: 1,
+    name: 'Aristoteles',
+    rating: 2,
+    comments: 'Not so good',
+  };
+  DBHelper.postReview(opts);
+};
+
+const deleteReview = (id) => {
+  DBHelper.deleteReview(id);
+};
+
+const updateReview = (id) => {
+  const opts = {
+    name: 'Juan',
+    rating: 5,
+    comments: 'delicious!',
+  };
+  DBHelper.updateReview(id, opts);
 };
 
 /**

@@ -41,7 +41,7 @@ class DBHelper {
   /**
    * Fetch reviews by restaurant ID
    */
-  static fetchReviewsByID(restaurantID, callback) {
+  static fetchReviewsByRestaurantID(restaurantID, callback) {
     this.showCachedReviewsByRestaurantID(restaurantID).then((cachedReviews) => {
       if (cachedReviews === undefined || cachedReviews.length === 0) {
         // array empty or does not exist
@@ -57,6 +57,52 @@ class DBHelper {
         callback(null, cachedReviews);
       }
     });
+  }
+
+  /**
+   * post review
+   * @param {review object} review 
+   */
+  static postReview(review) {
+    fetch('http://localhost:1337/reviews/', {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(review),
+    })
+      .then(res => res.json())
+      .catch(error => console.error('Error:', error))
+      .then(response => console.log('Success:', response));
+  }
+
+  /**
+   * Delete review
+   * @param {Review ID} id
+   */
+  static deleteReview(id) {
+    fetch(`http://localhost:1337/reviews/${id}`, {
+      method: 'delete',
+    })
+      .then((res) => { console.log(res); });
+  }
+
+  /**
+   * Update review
+   * @param {Review ID} id
+   * @param {Review object} review
+   */
+  static updateReview(id, review) {
+    fetch(`http://localhost:1337/reviews/${id}`, {
+      method: 'put',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(review),
+    })
+      .then(res => res.json())
+      .catch(error => console.error('Error:', error))
+      .then(response => console.log('Success:', response));
   }
 
   /**
@@ -274,9 +320,7 @@ class DBHelper {
       if (!db) return Promise.resolve();
       const data = db.transaction('reviews').objectStore('reviews');
       const restaurantIndex = data.index('restaurant');
-      return restaurantIndex.getAll(restaurantID).then((reviews) => {
-        return reviews;
-      });
+      return restaurantIndex.getAll(restaurantID).then(reviews => reviews);
     });
   }
 }

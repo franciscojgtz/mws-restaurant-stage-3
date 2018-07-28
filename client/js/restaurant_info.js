@@ -125,9 +125,32 @@ var fillRestaurantHoursHTML = function fillRestaurantHoursHTML() {
  * Fetch Reviews by restaurant id from network
  */
 var fetchReviewsByRestaurantID = function fetchReviewsByRestaurantID(restaurantID, callback) {
-  DBHelper.fetchReviewsByID(restaurantID, function (error, reviews) {
+  DBHelper.fetchReviewsByRestaurantID(restaurantID, function (error, reviews) {
     callback(null, reviews);
   });
+};
+
+var postReview = function postReview() {
+  var opts = {
+    restaurant_id: 1,
+    name: 'Aristoteles',
+    rating: 2,
+    comments: 'Not so good'
+  };
+  DBHelper.postReview(opts);
+};
+
+var deleteReview = function deleteReview(id) {
+  DBHelper.deleteReview(id);
+};
+
+var updateReview = function updateReview(id) {
+  var opts = {
+    name: 'Juan',
+    rating: 5,
+    comments: 'delicious!'
+  };
+  DBHelper.updateReview(id, opts);
 };
 
 /**

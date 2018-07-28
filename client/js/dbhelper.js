@@ -47,8 +47,8 @@ var DBHelper = function () {
      */
 
   }, {
-    key: 'fetchReviewsByID',
-    value: function fetchReviewsByID(restaurantID, callback) {
+    key: 'fetchReviewsByRestaurantID',
+    value: function fetchReviewsByRestaurantID(restaurantID, callback) {
       this.showCachedReviewsByRestaurantID(restaurantID).then(function (cachedReviews) {
         if (cachedReviews === undefined || cachedReviews.length === 0) {
           // array empty or does not exist
@@ -63,6 +63,68 @@ var DBHelper = function () {
           console.log('reviews from cache');
           callback(null, cachedReviews);
         }
+      });
+    }
+
+    /**
+     * post review
+     * @param {review object} review 
+     */
+
+  }, {
+    key: 'postReview',
+    value: function postReview(review) {
+      fetch('http://localhost:1337/reviews/', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify(review)
+      }).then(function (res) {
+        return res.json();
+      }).catch(function (error) {
+        return console.error('Error:', error);
+      }).then(function (response) {
+        return console.log('Success:', response);
+      });
+    }
+
+    /**
+     * Delete review
+     * @param {Review ID} id
+     */
+
+  }, {
+    key: 'deleteReview',
+    value: function deleteReview(id) {
+      fetch('http://localhost:1337/reviews/' + id, {
+        method: 'delete'
+      }).then(function (res) {
+        console.log(res);
+      });
+    }
+
+    /**
+     * Update review
+     * @param {Review ID} id
+     * @param {Review object} review
+     */
+
+  }, {
+    key: 'updateReview',
+    value: function updateReview(id, review) {
+      fetch('http://localhost:1337/reviews/' + id, {
+        method: 'put',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify(review)
+      }).then(function (res) {
+        return res.json();
+      }).catch(function (error) {
+        return console.error('Error:', error);
+      }).then(function (response) {
+        return console.log('Success:', response);
       });
     }
 
