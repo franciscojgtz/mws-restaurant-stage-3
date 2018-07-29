@@ -56,6 +56,7 @@
     <!-- end restaurant -->
     <!-- Beginning reviews -->
     <section id="reviews-container" class="reviews-container">
+      <h3>Reviews</h3>
       <ul id="reviews-list" class="reviews-list"></ul>
     </section>
     <!-- End reviews -->
@@ -66,9 +67,9 @@
     <form name="reviewForm" id="reviewForm" onsubmit="return processReview(null);" action="" method="post">
       <fieldset>
         <legend>Submit Review</legend>
-        Name: <input type="text" name="name"><br />
-        Rating: <input type="number" name="rating" min="1" max="5"><br />
-        <textarea id="comments"></textarea><br />
+        Name: <input type="text" name="name" required><br />
+        Rating: <input type="number" name="rating" min="1" max="5" required><br />
+        <textarea id="comments" required></textarea><br />
         <input type="submit" value="Submit">
       </fieldset>
     </form>

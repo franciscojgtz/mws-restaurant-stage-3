@@ -49,26 +49,40 @@ var DBHelper = function () {
   }, {
     key: 'fetchReviewsByRestaurantID',
     value: function fetchReviewsByRestaurantID(restaurantID, callback) {
+      var _this = this;
+
       this.showCachedReviewsByRestaurantID(restaurantID).then(function (cachedReviews) {
         if (cachedReviews === undefined || cachedReviews.length === 0) {
           // array empty or does not exist
-          fetch('http://localhost:1337/reviews/?restaurant_id=' + restaurantID).then(function (response) {
-            return response.json();
-          }).then(function (fetchedReviews) {
-            DBHelper.placeReviewsIntoIDB(fetchedReviews);
-            console.log('reviews from fetch');
+          _this.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
             callback(null, fetchedReviews);
           });
         } else {
           console.log('reviews from cache');
+          console.log(cachedReviews);
           callback(null, cachedReviews);
+          _this.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
+            callback(null, fetchedReviews);
+          });
         }
+      });
+    }
+  }, {
+    key: 'getReviewsFromNetwork',
+    value: function getReviewsFromNetwork(restaurantID) {
+      return fetch('http://localhost:1337/reviews/?restaurant_id=' + restaurantID).then(function (response) {
+        return response.json();
+      }).then(function (fetchedReviews) {
+        DBHelper.placeReviewsIntoIDB(fetchedReviews);
+        console.log('reviews from fetch');
+        console.log(fetchedReviews);
+        return fetchedReviews;
       });
     }
 
     /**
      * post review
-     * @param {review object} review 
+     * @param {review object} review
      */
 
   }, {

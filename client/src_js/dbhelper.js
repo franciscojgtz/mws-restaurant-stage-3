@@ -45,23 +45,34 @@ class DBHelper {
     this.showCachedReviewsByRestaurantID(restaurantID).then((cachedReviews) => {
       if (cachedReviews === undefined || cachedReviews.length === 0) {
         // array empty or does not exist
-        fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantID}`)
-          .then(response => response.json())
-          .then((fetchedReviews) => {
-            DBHelper.placeReviewsIntoIDB(fetchedReviews);
-            console.log('reviews from fetch');
-            callback(null, fetchedReviews);
-          });
+        this.getReviewsFromNetwork(restaurantID).then((fetchedReviews) => {
+          callback(null, fetchedReviews);
+        });
       } else {
         console.log('reviews from cache');
+        console.log(cachedReviews);
         callback(null, cachedReviews);
+        this.getReviewsFromNetwork(restaurantID).then((fetchedReviews) => {
+          callback(null, fetchedReviews);
+        });
       }
     });
   }
 
+  static getReviewsFromNetwork(restaurantID) {
+    return fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantID}`)
+      .then(response => response.json())
+      .then((fetchedReviews) => {
+        DBHelper.placeReviewsIntoIDB(fetchedReviews);
+        console.log('reviews from fetch');
+        console.log(fetchedReviews);
+        return fetchedReviews;
+      });
+  }
+
   /**
    * post review
-   * @param {review object} review 
+   * @param {review object} review
    */
   static postReview(review) {
     fetch('http://localhost:1337/reviews/', {

@@ -48,7 +48,7 @@ const fetchRestaurantFromURL = (callback) => {
   }
   const id = getParameterByName('id');
   if (!id) { // no id found in URL
-    error = 'No restaurant id in URL';
+    const error = 'No restaurant id in URL';
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
@@ -97,6 +97,8 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
  */
 const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
+  /* TO DO: This could be a paint issue*/
+  hours.innerHTML = '';
   for (const key in operatingHours) {
     const row = document.createElement('tr');
 
@@ -143,9 +145,6 @@ const updateReview = (id) => {
  */
 const fillReviewsHTML = (reviews = self.reviews) => {
   const container = document.getElementById('reviews-container');
-  const title = document.createElement('h3');
-  title.innerHTML = 'Reviews';
-  container.appendChild(title);
 
   if (!reviews) {
     const noReviews = document.createElement('p');
@@ -154,6 +153,8 @@ const fillReviewsHTML = (reviews = self.reviews) => {
     return;
   }
   const ul = document.getElementById('reviews-list');
+  //TO DO: this could result in a paint issue
+  ul.innerHTML = '';
   reviews.forEach((review) => {
     ul.appendChild(createReviewHTML(review));
   });

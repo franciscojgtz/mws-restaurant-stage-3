@@ -53,7 +53,7 @@ var fetchRestaurantFromURL = function fetchRestaurantFromURL(callback) {
   var id = getParameterByName('id');
   if (!id) {
     // no id found in URL
-    error = 'No restaurant id in URL';
+    var error = 'No restaurant id in URL';
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, function (error, restaurant) {
@@ -106,6 +106,8 @@ var fillRestaurantHoursHTML = function fillRestaurantHoursHTML() {
   var operatingHours = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.restaurant.operating_hours;
 
   var hours = document.getElementById('restaurant-hours');
+  /* TO DO: This could be a paint issue*/
+  hours.innerHTML = '';
   for (var key in operatingHours) {
     var row = document.createElement('tr');
 
@@ -154,9 +156,6 @@ var fillReviewsHTML = function fillReviewsHTML() {
   var reviews = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.reviews;
 
   var container = document.getElementById('reviews-container');
-  var title = document.createElement('h3');
-  title.innerHTML = 'Reviews';
-  container.appendChild(title);
 
   if (!reviews) {
     var noReviews = document.createElement('p');
@@ -165,6 +164,8 @@ var fillReviewsHTML = function fillReviewsHTML() {
     return;
   }
   var ul = document.getElementById('reviews-list');
+  //TO DO: this could result in a paint issue
+  ul.innerHTML = '';
   reviews.forEach(function (review) {
     ul.appendChild(createReviewHTML(review));
   });
