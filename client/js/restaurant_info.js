@@ -34,7 +34,7 @@ var initMap = function initMap() {
       requestAnimationFrame(function () {
         newMap.invalidateSize();
       });
-      //setTimeout(() => { newMap.invalidateSize(); }, 400);
+      // setTimeout(() => { newMap.invalidateSize(); }, 400);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
@@ -62,7 +62,7 @@ var fetchRestaurantFromURL = function fetchRestaurantFromURL(callback) {
         console.error(error);
         return;
       }
-      //fetch the reviews from the network
+      // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, function (error, reviews) {
         self.reviews = reviews;
         fillRestaurantHTML();
@@ -130,14 +130,8 @@ var fetchReviewsByRestaurantID = function fetchReviewsByRestaurantID(restaurantI
   });
 };
 
-var postReview = function postReview() {
-  var opts = {
-    restaurant_id: 1,
-    name: 'Aristoteles',
-    rating: 2,
-    comments: 'Not so good'
-  };
-  DBHelper.postReview(opts);
+var postReview = function postReview(review) {
+  DBHelper.postReview(review);
 };
 
 var deleteReview = function deleteReview(id) {
@@ -292,6 +286,42 @@ function createResponsiveImage(restaurant) {
   image.srcset = restImg + '_300.webp 300w, ' + restImg + '_350.webp 350w, ' + restImg + '_400.webp 400w, ' + restImg + '_450.webp 450w, ' + restImg + '_500.webp 500w, ' + restImg + '_550.webp 550w, ' + restImg + '_600.webp 600w, ' + restImg + '_700.webp 700w, ' + restImg + '_800.webp 800w';
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
+
+/**
+ * Handle review form
+ */
+/*
+document.getElementById("reviewForm").addEventListener("submit", (event) => {
+  console.log(event);
+
+  return false;
+}); */
+
+/**
+ * Handle review form
+ */
+var processReview = function processReview(reviewID) {
+  var restaurant = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : self.restaurant;
+
+  var name = document.reviewForm.name.value;
+  var rating = document.reviewForm.rating.value;
+  var comments = document.reviewForm.comments.value;
+
+  var review = {
+    restaurant_id: restaurant.id,
+    name: name,
+    rating: rating,
+    comments: comments
+  };
+
+  console.log(reviewID);
+
+  postReview(review);
+
+  location.reload();
+
+  return false;
+};
 
 function notifySWUpdates(reg) {
   console.log('There is a new Service Worker available');

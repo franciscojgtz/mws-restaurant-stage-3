@@ -31,7 +31,7 @@ const initMap = () => {
         id: 'mapbox.streets',
       }).addTo(newMap);
       requestAnimationFrame(() => { newMap.invalidateSize(); });
-      //setTimeout(() => { newMap.invalidateSize(); }, 400);
+      // setTimeout(() => { newMap.invalidateSize(); }, 400);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
@@ -57,7 +57,7 @@ const fetchRestaurantFromURL = (callback) => {
         console.error(error);
         return;
       }
-      //fetch the reviews from the network
+      // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, (error, reviews) => {
         self.reviews = reviews;
         fillRestaurantHTML();
@@ -121,14 +121,8 @@ const fetchReviewsByRestaurantID = (restaurantID, callback) => {
   });
 };
 
-const postReview = () => {
-  const opts = {
-    restaurant_id: 1,
-    name: 'Aristoteles',
-    rating: 2,
-    comments: 'Not so good',
-  };
-  DBHelper.postReview(opts);
+const postReview = (review) => {
+  DBHelper.postReview(review);
 };
 
 const deleteReview = (id) => {
@@ -177,7 +171,7 @@ const createReviewHTML = (review) => {
 
   const date = document.createElement('p');
   const updatedAt = review.updatedAt;
-  const updatedDate= timeConverter(updatedAt);
+  const updatedDate = timeConverter(updatedAt);
   date.innerHTML = updatedDate;
   li.appendChild(date);
 
@@ -222,15 +216,12 @@ const fillBreadcrumb = (restaurant = self.restaurant) => {
  * Get a parameter by name from page URL.
  */
 const getParameterByName = (name, url) => {
-  if (!url)
-  {url = window.location.href;}
+  if (!url) { url = window.location.href; }
   name = name.replace(/[\[\]]/g, '\\$&');
   const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
     results = regex.exec(url);
-  if (!results)
-  {return null;}
-  if (!results[2])
-  {return '';}
+  if (!results) { return null; }
+  if (!results[2]) { return ''; }
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 };
 
@@ -277,6 +268,40 @@ function createResponsiveImage(restaurant) {
   image.srcset = `${restImg}_300.webp 300w, ${restImg}_350.webp 350w, ${restImg}_400.webp 400w, ${restImg}_450.webp 450w, ${restImg}_500.webp 500w, ${restImg}_550.webp 550w, ${restImg}_600.webp 600w, ${restImg}_700.webp 700w, ${restImg}_800.webp 800w`;
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
+
+/**
+ * Handle review form
+ */
+/*
+document.getElementById("reviewForm").addEventListener("submit", (event) => {
+  console.log(event);
+
+  return false;
+}); */
+
+/**
+ * Handle review form
+ */
+const processReview = (reviewID, restaurant = self.restaurant) => {
+  const name = document.reviewForm.name.value;
+  const rating = document.reviewForm.rating.value;
+  const comments = document.reviewForm.comments.value;
+
+  const review = {
+    restaurant_id: restaurant.id,
+    name,
+    rating,
+    comments,
+  };
+
+  console.log(reviewID);
+
+  postReview(review);
+
+  location.reload();
+
+  return false;
+};
 
 function notifySWUpdates(reg) {
   console.log('There is a new Service Worker available');
