@@ -43,18 +43,25 @@ class DBHelper {
    */
   static fetchReviewsByRestaurantID(restaurantID, callback) {
     this.showCachedReviewsByRestaurantID(restaurantID).then((cachedReviews) => {
-      if (cachedReviews === undefined || cachedReviews.length === 0) {
-        // array empty or does not exist
-        this.getReviewsFromNetwork(restaurantID).then((fetchedReviews) => {
-          callback(null, fetchedReviews);
+      this.getDeferedReviews().then((deferedReviews) => {
+        deferedReviews.forEach((deferedReview) => {
+          if (restaurantID === deferedReview.restaurant_id) {
+            cachedReviews.push(deferedReview);
+          }
         });
-      } else {
-        console.log('reviews from cache');
-        callback(null, cachedReviews);
-        this.getReviewsFromNetwork(restaurantID).then((fetchedReviews) => {
-          callback(null, fetchedReviews);
-        });
-      }
+        if (cachedReviews === undefined || cachedReviews.length === 0) {
+          // array empty or does not exist
+          this.getReviewsFromNetwork(restaurantID).then((fetchedReviews) => {
+            callback(null, fetchedReviews);
+          });
+        } else {
+          console.log('reviews from cache');
+          callback(null, cachedReviews);
+          this.getReviewsFromNetwork(restaurantID).then((fetchedReviews) => {
+            callback(null, fetchedReviews);
+          });
+        }
+      });
     });
   }
 
@@ -62,8 +69,7 @@ class DBHelper {
     this.getDeferedReviews().then((deferedReviews) => {
       deferedReviews.forEach((deferedReview) => {
         this.postReview(deferedReview, (error, reviewResponse) => {
-          console.log(reviewResponse);
-          //delete review from defered-reviews store
+          // delete review from defered-reviews store
           console.log(reviewResponse.restaurant_id);
           if (error) {
             console.log(error);
@@ -79,7 +85,6 @@ class DBHelper {
       .then((fetchedReviews) => {
         DBHelper.placeReviewsIntoIDB(fetchedReviews);
         console.log('reviews from fetch');
-        console.log(fetchedReviews);
         return fetchedReviews;
       });
   }
@@ -392,7 +397,7 @@ class DBHelper {
   }
 
   /**
-   * 
+   *
    */
   static deleteDeferedReviewByRestaurantID(restaurantID) {
     const dbPromise = DBHelper.openIDB();
@@ -407,5 +412,4 @@ class DBHelper {
       console.log('Item deleted');
     });
   }
-
 }

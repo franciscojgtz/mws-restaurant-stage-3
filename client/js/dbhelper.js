@@ -52,18 +52,25 @@ var DBHelper = function () {
       var _this = this;
 
       this.showCachedReviewsByRestaurantID(restaurantID).then(function (cachedReviews) {
-        if (cachedReviews === undefined || cachedReviews.length === 0) {
-          // array empty or does not exist
-          _this.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
-            callback(null, fetchedReviews);
+        _this.getDeferedReviews().then(function (deferedReviews) {
+          deferedReviews.forEach(function (deferedReview) {
+            if (restaurantID === deferedReview.restaurant_id) {
+              cachedReviews.push(deferedReview);
+            }
           });
-        } else {
-          console.log('reviews from cache');
-          callback(null, cachedReviews);
-          _this.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
-            callback(null, fetchedReviews);
-          });
-        }
+          if (cachedReviews === undefined || cachedReviews.length === 0) {
+            // array empty or does not exist
+            _this.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
+              callback(null, fetchedReviews);
+            });
+          } else {
+            console.log('reviews from cache');
+            callback(null, cachedReviews);
+            _this.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
+              callback(null, fetchedReviews);
+            });
+          }
+        });
       });
     }
   }, {
@@ -74,8 +81,7 @@ var DBHelper = function () {
       this.getDeferedReviews().then(function (deferedReviews) {
         deferedReviews.forEach(function (deferedReview) {
           _this2.postReview(deferedReview, function (error, reviewResponse) {
-            console.log(reviewResponse);
-            //delete review from defered-reviews store
+            // delete review from defered-reviews store
             console.log(reviewResponse.restaurant_id);
             if (error) {
               console.log(error);
@@ -91,7 +97,6 @@ var DBHelper = function () {
       }).then(function (fetchedReviews) {
         DBHelper.placeReviewsIntoIDB(fetchedReviews);
         console.log('reviews from fetch');
-        console.log(fetchedReviews);
         return fetchedReviews;
       });
     }
@@ -491,7 +496,7 @@ var DBHelper = function () {
     }
 
     /**
-     * 
+     *
      */
 
   }, {
