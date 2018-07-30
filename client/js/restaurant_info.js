@@ -135,8 +135,9 @@ var fetchReviewsByRestaurantID = function fetchReviewsByRestaurantID(restaurantI
 /**
  * Handle review form
  */
-
 document.getElementById('reviewForm').addEventListener('submit', function (event) {
+  console.log(event);
+  event.preventDefault();
   var name = document.reviewForm.name.value.trim();
   var rating = document.reviewForm.rating.value;
   var comments = document.reviewForm.comments.value;
@@ -151,13 +152,18 @@ document.getElementById('reviewForm').addEventListener('submit', function (event
   DBHelper.postReview(review, function (error, reviewResponse) {
     // what do i want to happen after review is in database
 
+    // clear form data
+    /*name = '';
+    rating = '';
+    comments = '';*/
+
     // add review with others
     var container = document.getElementById('reviews-container');
     var ul = document.getElementById('reviews-list');
     ul.appendChild(createReviewHTML(reviewResponse));
     container.appendChild(ul);
   });
-});
+}, false);
 
 var deleteReview = function deleteReview(id) {
   DBHelper.deleteReview(id);
@@ -199,7 +205,6 @@ var fillReviewsHTML = function fillReviewsHTML() {
  * Create review HTML and add it to the webpage.
  */
 var createReviewHTML = function createReviewHTML(review) {
-  console.log(review);
   var li = document.createElement('li');
   var name = document.createElement('p');
   name.innerHTML = review.name;
