@@ -64,8 +64,12 @@ class DBHelper {
         this.postReview(deferedReview, (error, reviewResponse) => {
           console.log(reviewResponse);
           //delete review from defered-reviews store
-          console.log(restaurantID);
-          this.deleteDeferedReviewByRestaurantID(restaurantID);
+          console.log(reviewResponse.restaurant_id);
+          if (error) {
+            console.log(error);
+          } else {
+            this.deleteDeferedReviewByRestaurantID(reviewResponse.restaurant_id);
+          }
         });
       });
     });

@@ -76,8 +76,12 @@ var DBHelper = function () {
           _this2.postReview(deferedReview, function (error, reviewResponse) {
             console.log(reviewResponse);
             //delete review from defered-reviews store
-            console.log(restaurantID);
-            _this2.deleteDeferedReviewByRestaurantID(restaurantID);
+            console.log(reviewResponse.restaurant_id);
+            if (error) {
+              console.log(error);
+            } else {
+              _this2.deleteDeferedReviewByRestaurantID(reviewResponse.restaurant_id);
+            }
           });
         });
       });
