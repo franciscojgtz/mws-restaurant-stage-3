@@ -50,7 +50,6 @@ class DBHelper {
         });
       } else {
         console.log('reviews from cache');
-        console.log(cachedReviews);
         callback(null, cachedReviews);
         this.getReviewsFromNetwork(restaurantID).then((fetchedReviews) => {
           callback(null, fetchedReviews);
@@ -60,6 +59,17 @@ class DBHelper {
   }
 
   static getReviewsFromNetwork(restaurantID) {
+    this.getDeferedReviews().then((deferedReviews) => {
+      deferedReviews.forEach((deferedReview) => {
+        this.postReview(deferedReview, (error, reviewResponse) => {
+          console.log(reviewResponse);
+          //delete review from defered-reviews store
+          console.log(restaurantID);
+          this.deleteDeferedReviewByRestaurantID(restaurantID);
+        });
+      });
+    });
+
     return fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantID}`)
       .then(response => response.json())
       .then((fetchedReviews) => {
@@ -94,8 +104,7 @@ class DBHelper {
         const timeStamp = Date.now();
         review.createdAt = timeStamp;
         review.updatedAt = timeStamp;
-        console.log(review);
-        this.placeDefferedReviewsIntoIDB(review);
+        this.placedeferedReviewsIntoIDB(review);
         callback(error, review);
       });
   }
@@ -288,7 +297,7 @@ class DBHelper {
           });
           reviewsStore.createIndex('restaurant', 'restaurant_id');
         case 2:
-          const defferedReviewsStore = upgradeDb.createObjectStore('deffered-reviews', {
+          const deferedReviewsStore = upgradeDb.createObjectStore('defered-reviews', {
             keyPath: 'restaurant_id',
           });
       }
@@ -328,15 +337,15 @@ class DBHelper {
   }
 
   /**
-   * Place Deffered Reviews in IDB
+   * Place defered Reviews in IDB
    * @param {*} reviews
    */
-  static placeDefferedReviewsIntoIDB(review) {
+  static placedeferedReviewsIntoIDB(review) {
     const dbPromise = DBHelper.openIDB();
     dbPromise.then((db) => {
       if (!db) return;
-      const tx = db.transaction('deffered-reviews', 'readwrite');
-      const reviewsStore = tx.objectStore('deffered-reviews');
+      const tx = db.transaction('defered-reviews', 'readwrite');
+      const reviewsStore = tx.objectStore('defered-reviews');
       reviewsStore.put(review);
     });
   }
@@ -365,4 +374,34 @@ class DBHelper {
       return restaurantIndex.getAll(restaurantID).then(reviews => reviews);
     });
   }
+
+  /**
+   * Get Defered
+   */
+  static getDeferedReviews() {
+    const dbPromise = DBHelper.openIDB();
+    return dbPromise.then((db) => {
+      if (!db) return Promise.resolve();
+      const data = db.transaction('defered-reviews').objectStore('defered-reviews');
+      return data.getAll().then(reviews => reviews);
+    });
+  }
+
+  /**
+   * 
+   */
+  static deleteDeferedReviewByRestaurantID(restaurantID) {
+    const dbPromise = DBHelper.openIDB();
+    return dbPromise.then((db) => {
+      if (!db) return Promise.resolve();
+      const tx = db.transaction('defered-reviews', 'readwrite');
+      const reviewsStore = tx.objectStore('defered-reviews');
+      console.log(restaurantID);
+      reviewsStore.delete(restaurantID);
+      return tx.complete;
+    }).then(() => {
+      console.log('Item deleted');
+    });
+  }
+
 }

@@ -174,6 +174,14 @@ var updateReview = function updateReview(id) {
   DBHelper.updateReview(id, opts);
 };
 
+window.addEventListener('offline', function (e) {
+  console.log('offline');
+});
+
+window.addEventListener('online', function (e) {
+  console.log('online');
+});
+
 /**
  * Create all reviews HTML and add them to the webpage.
  */

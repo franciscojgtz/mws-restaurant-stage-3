@@ -59,7 +59,6 @@ var DBHelper = function () {
           });
         } else {
           console.log('reviews from cache');
-          console.log(cachedReviews);
           callback(null, cachedReviews);
           _this.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
             callback(null, fetchedReviews);
@@ -70,6 +69,19 @@ var DBHelper = function () {
   }, {
     key: 'getReviewsFromNetwork',
     value: function getReviewsFromNetwork(restaurantID) {
+      var _this2 = this;
+
+      this.getDeferedReviews().then(function (deferedReviews) {
+        deferedReviews.forEach(function (deferedReview) {
+          _this2.postReview(deferedReview, function (error, reviewResponse) {
+            console.log(reviewResponse);
+            //delete review from defered-reviews store
+            console.log(restaurantID);
+            _this2.deleteDeferedReviewByRestaurantID(restaurantID);
+          });
+        });
+      });
+
       return fetch('http://localhost:1337/reviews/?restaurant_id=' + restaurantID).then(function (response) {
         return response.json();
       }).then(function (fetchedReviews) {
@@ -88,7 +100,7 @@ var DBHelper = function () {
   }, {
     key: 'postReview',
     value: function postReview(review, callback) {
-      var _this2 = this;
+      var _this3 = this;
 
       fetch('http://localhost:1337/reviews/', {
         method: 'post',
@@ -108,8 +120,7 @@ var DBHelper = function () {
         var timeStamp = Date.now();
         review.createdAt = timeStamp;
         review.updatedAt = timeStamp;
-        console.log(review);
-        _this2.placeDefferedReviewsIntoIDB(review);
+        _this3.placedeferedReviewsIntoIDB(review);
         callback(error, review);
       });
     }
@@ -361,7 +372,7 @@ var DBHelper = function () {
             });
             reviewsStore.createIndex('restaurant', 'restaurant_id');
           case 2:
-            var defferedReviewsStore = upgradeDb.createObjectStore('deffered-reviews', {
+            var deferedReviewsStore = upgradeDb.createObjectStore('defered-reviews', {
               keyPath: 'restaurant_id'
             });
         }
@@ -407,18 +418,18 @@ var DBHelper = function () {
     }
 
     /**
-     * Place Deffered Reviews in IDB
+     * Place defered Reviews in IDB
      * @param {*} reviews
      */
 
   }, {
-    key: 'placeDefferedReviewsIntoIDB',
-    value: function placeDefferedReviewsIntoIDB(review) {
+    key: 'placedeferedReviewsIntoIDB',
+    value: function placedeferedReviewsIntoIDB(review) {
       var dbPromise = DBHelper.openIDB();
       dbPromise.then(function (db) {
         if (!db) return;
-        var tx = db.transaction('deffered-reviews', 'readwrite');
-        var reviewsStore = tx.objectStore('deffered-reviews');
+        var tx = db.transaction('defered-reviews', 'readwrite');
+        var reviewsStore = tx.objectStore('defered-reviews');
         reviewsStore.put(review);
       });
     }
@@ -455,6 +466,43 @@ var DBHelper = function () {
         return restaurantIndex.getAll(restaurantID).then(function (reviews) {
           return reviews;
         });
+      });
+    }
+
+    /**
+     * Get Defered
+     */
+
+  }, {
+    key: 'getDeferedReviews',
+    value: function getDeferedReviews() {
+      var dbPromise = DBHelper.openIDB();
+      return dbPromise.then(function (db) {
+        if (!db) return Promise.resolve();
+        var data = db.transaction('defered-reviews').objectStore('defered-reviews');
+        return data.getAll().then(function (reviews) {
+          return reviews;
+        });
+      });
+    }
+
+    /**
+     * 
+     */
+
+  }, {
+    key: 'deleteDeferedReviewByRestaurantID',
+    value: function deleteDeferedReviewByRestaurantID(restaurantID) {
+      var dbPromise = DBHelper.openIDB();
+      return dbPromise.then(function (db) {
+        if (!db) return Promise.resolve();
+        var tx = db.transaction('defered-reviews', 'readwrite');
+        var reviewsStore = tx.objectStore('defered-reviews');
+        console.log(restaurantID);
+        reviewsStore.delete(restaurantID);
+        return tx.complete;
+      }).then(function () {
+        console.log('Item deleted');
       });
     }
   }, {
