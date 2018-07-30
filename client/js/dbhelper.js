@@ -88,6 +88,8 @@ var DBHelper = function () {
   }, {
     key: 'postReview',
     value: function postReview(review, callback) {
+      var _this2 = this;
+
       fetch('http://localhost:1337/reviews/', {
         method: 'post',
         headers: {
@@ -96,13 +98,19 @@ var DBHelper = function () {
         body: JSON.stringify(review)
       }).then(function (res) {
         return res.json();
-      }).catch(function (error) {
-        console.error('Error:', error);
-        callback(error, null);
       }).then(function (response) {
         console.log('Success:', response);
         // TO DO add review to indexDB
         callback(null, response);
+      }).catch(function (error) {
+        console.error('Error:', error);
+        // To do defer review
+        var timeStamp = Date.now();
+        review.createdAt = timeStamp;
+        review.updatedAt = timeStamp;
+        console.log(review);
+        _this2.placeDefferedReviewsIntoIDB(review);
+        callback(error, review);
       });
     }
 
@@ -341,7 +349,7 @@ var DBHelper = function () {
       if (!navigator.serviceWorker) {
         return Promise.resolve();
       }
-      return idb.open('restaurants-reviews', 2, function (upgradeDb) {
+      return idb.open('restaurants-reviews', 3, function (upgradeDb) {
         switch (upgradeDb.oldVersion) {
           case 0:
             var store = upgradeDb.createObjectStore('restaurants', {
@@ -352,6 +360,10 @@ var DBHelper = function () {
               keyPath: 'id'
             });
             reviewsStore.createIndex('restaurant', 'restaurant_id');
+          case 2:
+            var defferedReviewsStore = upgradeDb.createObjectStore('deffered-reviews', {
+              keyPath: 'restaurant_id'
+            });
         }
       });
     }
@@ -388,9 +400,26 @@ var DBHelper = function () {
         if (!db) return;
         var tx = db.transaction('reviews', 'readwrite');
         var reviewsStore = tx.objectStore('reviews');
-        reviews.forEach(function (reviews) {
-          reviewsStore.put(reviews);
+        reviews.forEach(function (review) {
+          reviewsStore.put(review);
         });
+      });
+    }
+
+    /**
+     * Place Deffered Reviews in IDB
+     * @param {*} reviews
+     */
+
+  }, {
+    key: 'placeDefferedReviewsIntoIDB',
+    value: function placeDefferedReviewsIntoIDB(review) {
+      var dbPromise = DBHelper.openIDB();
+      dbPromise.then(function (db) {
+        if (!db) return;
+        var tx = db.transaction('deffered-reviews', 'readwrite');
+        var reviewsStore = tx.objectStore('deffered-reviews');
+        reviewsStore.put(review);
       });
     }
 

@@ -136,7 +136,6 @@ var fetchReviewsByRestaurantID = function fetchReviewsByRestaurantID(restaurantI
  * Handle review form
  */
 document.getElementById('reviewForm').addEventListener('submit', function (event) {
-  console.log(event);
   event.preventDefault();
   var name = document.reviewForm.name.value.trim();
   var rating = document.reviewForm.rating.value;
@@ -152,10 +151,7 @@ document.getElementById('reviewForm').addEventListener('submit', function (event
   DBHelper.postReview(review, function (error, reviewResponse) {
     // what do i want to happen after review is in database
 
-    // clear form data
-    /*name = '';
-    rating = '';
-    comments = '';*/
+    document.getElementById('reviewForm').reset();
 
     // add review with others
     var container = document.getElementById('reviews-container');

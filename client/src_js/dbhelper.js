@@ -83,14 +83,20 @@ class DBHelper {
       body: JSON.stringify(review),
     })
       .then(res => res.json())
-      .catch((error) => {
-        console.error('Error:', error);
-        callback(error, null);
-      })
       .then((response) => {
         console.log('Success:', response);
         // TO DO add review to indexDB
         callback(null, response);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        // To do defer review
+        const timeStamp = Date.now();
+        review.createdAt = timeStamp;
+        review.updatedAt = timeStamp;
+        console.log(review);
+        this.placeDefferedReviewsIntoIDB(review);
+        callback(error, review);
       });
   }
 
@@ -270,7 +276,7 @@ class DBHelper {
     if (!navigator.serviceWorker) {
       return Promise.resolve();
     }
-    return idb.open('restaurants-reviews', 2, (upgradeDb) => {
+    return idb.open('restaurants-reviews', 3, (upgradeDb) => {
       switch (upgradeDb.oldVersion) {
         case 0:
           const store = upgradeDb.createObjectStore('restaurants', {
@@ -281,6 +287,10 @@ class DBHelper {
             keyPath: 'id',
           });
           reviewsStore.createIndex('restaurant', 'restaurant_id');
+        case 2:
+          const defferedReviewsStore = upgradeDb.createObjectStore('deffered-reviews', {
+            keyPath: 'restaurant_id',
+          });
       }
     });
   }
@@ -311,9 +321,23 @@ class DBHelper {
       if (!db) return;
       const tx = db.transaction('reviews', 'readwrite');
       const reviewsStore = tx.objectStore('reviews');
-      reviews.forEach((reviews) => {
-        reviewsStore.put(reviews);
+      reviews.forEach((review) => {
+        reviewsStore.put(review);
       });
+    });
+  }
+
+  /**
+   * Place Deffered Reviews in IDB
+   * @param {*} reviews
+   */
+  static placeDefferedReviewsIntoIDB(review) {
+    const dbPromise = DBHelper.openIDB();
+    dbPromise.then((db) => {
+      if (!db) return;
+      const tx = db.transaction('deffered-reviews', 'readwrite');
+      const reviewsStore = tx.objectStore('deffered-reviews');
+      reviewsStore.put(review);
     });
   }
 

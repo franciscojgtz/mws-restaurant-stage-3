@@ -127,7 +127,6 @@ const fetchReviewsByRestaurantID = (restaurantID, callback) => {
  * Handle review form
  */
 document.getElementById('reviewForm').addEventListener('submit', (event) => {
-  console.log(event);
   event.preventDefault();
   const name = document.reviewForm.name.value.trim();
   const rating = document.reviewForm.rating.value;
@@ -143,10 +142,7 @@ document.getElementById('reviewForm').addEventListener('submit', (event) => {
   DBHelper.postReview(review, (error, reviewResponse) => {
     // what do i want to happen after review is in database
 
-    // clear form data
-    /*name = '';
-    rating = '';
-    comments = '';*/
+    document.getElementById('reviewForm').reset();
 
     // add review with others
     const container = document.getElementById('reviews-container');
@@ -154,8 +150,6 @@ document.getElementById('reviewForm').addEventListener('submit', (event) => {
     ul.appendChild(createReviewHTML(reviewResponse));
     container.appendChild(ul);
   });
-
-  
 }, false);
 
 const deleteReview = (id) => {
