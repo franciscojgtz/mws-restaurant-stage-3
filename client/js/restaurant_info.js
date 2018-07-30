@@ -106,7 +106,7 @@ var fillRestaurantHoursHTML = function fillRestaurantHoursHTML() {
   var operatingHours = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.restaurant.operating_hours;
 
   var hours = document.getElementById('restaurant-hours');
-  /* TO DO: This could be a paint issue*/
+  /* TO DO: This could be a paint issue */
   hours.innerHTML = '';
   for (var key in operatingHours) {
     var row = document.createElement('tr');
@@ -133,7 +133,18 @@ var fetchReviewsByRestaurantID = function fetchReviewsByRestaurantID(restaurantI
 };
 
 var postReview = function postReview(review) {
-  DBHelper.postReview(review);
+  //if error
+
+  DBHelper.postReview(review, function (error, reviewResponse) {
+    // what do i want to happen after review is in database
+
+    // add review with others
+    var container = document.getElementById('reviews-container');
+    var ul = document.getElementById('reviews-list');
+    console.log(reviewResponse);
+    ul.appendChild(createReviewHTML(reviewResponse));
+    container.appendChild(ul);
+  });
 };
 
 var deleteReview = function deleteReview(id) {
@@ -164,7 +175,7 @@ var fillReviewsHTML = function fillReviewsHTML() {
     return;
   }
   var ul = document.getElementById('reviews-list');
-  //TO DO: this could result in a paint issue
+  // TO DO: this could result in a paint issue
   ul.innerHTML = '';
   reviews.forEach(function (review) {
     ul.appendChild(createReviewHTML(review));
@@ -176,6 +187,7 @@ var fillReviewsHTML = function fillReviewsHTML() {
  * Create review HTML and add it to the webpage.
  */
 var createReviewHTML = function createReviewHTML(review) {
+  console.log(review);
   var li = document.createElement('li');
   var name = document.createElement('p');
   name.innerHTML = review.name;
@@ -304,7 +316,9 @@ document.getElementById("reviewForm").addEventListener("submit", (event) => {
 var processReview = function processReview(reviewID) {
   var restaurant = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : self.restaurant;
 
-  var name = document.reviewForm.name.value;
+  /* TO DO: Check if form was submitted */
+
+  var name = document.reviewForm.name.value.trim();
   var rating = document.reviewForm.rating.value;
   var comments = document.reviewForm.comments.value;
 
@@ -319,7 +333,7 @@ var processReview = function processReview(reviewID) {
 
   postReview(review);
 
-  location.reload();
+  // location.reload();
 
   return false;
 };

@@ -74,7 +74,7 @@ class DBHelper {
    * post review
    * @param {review object} review
    */
-  static postReview(review) {
+  static postReview(review, callback) {
     fetch('http://localhost:1337/reviews/', {
       method: 'post',
       headers: {
@@ -83,8 +83,15 @@ class DBHelper {
       body: JSON.stringify(review),
     })
       .then(res => res.json())
-      .catch(error => console.error('Error:', error))
-      .then(response => console.log('Success:', response));
+      .catch((error) => {
+        console.error('Error:', error);
+        callback(error, null);
+      })
+      .then((response) => {
+        console.log('Success:', response);
+        // TO DO add review to indexDB
+        callback(null, response);
+      });
   }
 
   /**

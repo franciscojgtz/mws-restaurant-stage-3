@@ -97,7 +97,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
  */
 const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
-  /* TO DO: This could be a paint issue*/
+  /* TO DO: This could be a paint issue */
   hours.innerHTML = '';
   for (const key in operatingHours) {
     const row = document.createElement('tr');
@@ -124,7 +124,18 @@ const fetchReviewsByRestaurantID = (restaurantID, callback) => {
 };
 
 const postReview = (review) => {
-  DBHelper.postReview(review);
+  //if error
+
+  DBHelper.postReview(review, (error, reviewResponse) => {
+    // what do i want to happen after review is in database
+
+    // add review with others
+    const container = document.getElementById('reviews-container');
+    const ul = document.getElementById('reviews-list');
+    console.log(reviewResponse);
+    ul.appendChild(createReviewHTML(reviewResponse));
+    container.appendChild(ul);
+  });
 };
 
 const deleteReview = (id) => {
@@ -153,7 +164,7 @@ const fillReviewsHTML = (reviews = self.reviews) => {
     return;
   }
   const ul = document.getElementById('reviews-list');
-  //TO DO: this could result in a paint issue
+  // TO DO: this could result in a paint issue
   ul.innerHTML = '';
   reviews.forEach((review) => {
     ul.appendChild(createReviewHTML(review));
@@ -165,6 +176,7 @@ const fillReviewsHTML = (reviews = self.reviews) => {
  * Create review HTML and add it to the webpage.
  */
 const createReviewHTML = (review) => {
+  console.log(review);
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.innerHTML = review.name;
@@ -284,7 +296,9 @@ document.getElementById("reviewForm").addEventListener("submit", (event) => {
  * Handle review form
  */
 const processReview = (reviewID, restaurant = self.restaurant) => {
-  const name = document.reviewForm.name.value;
+  /* TO DO: Check if form was submitted */
+
+  const name = document.reviewForm.name.value.trim();
   const rating = document.reviewForm.rating.value;
   const comments = document.reviewForm.comments.value;
 
@@ -299,7 +313,7 @@ const processReview = (reviewID, restaurant = self.restaurant) => {
 
   postReview(review);
 
-  location.reload();
+  // location.reload();
 
   return false;
 };

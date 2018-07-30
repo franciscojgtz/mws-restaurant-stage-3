@@ -87,7 +87,7 @@ var DBHelper = function () {
 
   }, {
     key: 'postReview',
-    value: function postReview(review) {
+    value: function postReview(review, callback) {
       fetch('http://localhost:1337/reviews/', {
         method: 'post',
         headers: {
@@ -97,9 +97,12 @@ var DBHelper = function () {
       }).then(function (res) {
         return res.json();
       }).catch(function (error) {
-        return console.error('Error:', error);
+        console.error('Error:', error);
+        callback(error, null);
       }).then(function (response) {
-        return console.log('Success:', response);
+        console.log('Success:', response);
+        // TO DO add review to indexDB
+        callback(null, response);
       });
     }
 
