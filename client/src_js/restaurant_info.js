@@ -123,8 +123,21 @@ const fetchReviewsByRestaurantID = (restaurantID, callback) => {
   });
 };
 
-const postReview = (review) => {
-  //if error
+/**
+ * Handle review form
+ */
+
+document.getElementById('reviewForm').addEventListener('submit', (event) => {
+  const name = document.reviewForm.name.value.trim();
+  const rating = document.reviewForm.rating.value;
+  const comments = document.reviewForm.comments.value;
+
+  const review = {
+    restaurant_id: restaurant.id,
+    name,
+    rating,
+    comments,
+  };
 
   DBHelper.postReview(review, (error, reviewResponse) => {
     // what do i want to happen after review is in database
@@ -132,11 +145,10 @@ const postReview = (review) => {
     // add review with others
     const container = document.getElementById('reviews-container');
     const ul = document.getElementById('reviews-list');
-    console.log(reviewResponse);
     ul.appendChild(createReviewHTML(reviewResponse));
     container.appendChild(ul);
   });
-};
+});
 
 const deleteReview = (id) => {
   DBHelper.deleteReview(id);
@@ -282,41 +294,6 @@ function createResponsiveImage(restaurant) {
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
 
-/**
- * Handle review form
- */
-/*
-document.getElementById("reviewForm").addEventListener("submit", (event) => {
-  console.log(event);
-
-  return false;
-}); */
-
-/**
- * Handle review form
- */
-const processReview = (reviewID, restaurant = self.restaurant) => {
-  /* TO DO: Check if form was submitted */
-
-  const name = document.reviewForm.name.value.trim();
-  const rating = document.reviewForm.rating.value;
-  const comments = document.reviewForm.comments.value;
-
-  const review = {
-    restaurant_id: restaurant.id,
-    name,
-    rating,
-    comments,
-  };
-
-  console.log(reviewID);
-
-  postReview(review);
-
-  // location.reload();
-
-  return false;
-};
 
 function notifySWUpdates(reg) {
   console.log('There is a new Service Worker available');

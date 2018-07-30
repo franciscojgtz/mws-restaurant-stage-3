@@ -132,8 +132,21 @@ var fetchReviewsByRestaurantID = function fetchReviewsByRestaurantID(restaurantI
   });
 };
 
-var postReview = function postReview(review) {
-  //if error
+/**
+ * Handle review form
+ */
+
+document.getElementById('reviewForm').addEventListener('submit', function (event) {
+  var name = document.reviewForm.name.value.trim();
+  var rating = document.reviewForm.rating.value;
+  var comments = document.reviewForm.comments.value;
+
+  var review = {
+    restaurant_id: restaurant.id,
+    name: name,
+    rating: rating,
+    comments: comments
+  };
 
   DBHelper.postReview(review, function (error, reviewResponse) {
     // what do i want to happen after review is in database
@@ -141,11 +154,10 @@ var postReview = function postReview(review) {
     // add review with others
     var container = document.getElementById('reviews-container');
     var ul = document.getElementById('reviews-list');
-    console.log(reviewResponse);
     ul.appendChild(createReviewHTML(reviewResponse));
     container.appendChild(ul);
   });
-};
+});
 
 var deleteReview = function deleteReview(id) {
   DBHelper.deleteReview(id);
@@ -299,44 +311,6 @@ function createResponsiveImage(restaurant) {
   image.srcset = restImg + '_300.webp 300w, ' + restImg + '_350.webp 350w, ' + restImg + '_400.webp 400w, ' + restImg + '_450.webp 450w, ' + restImg + '_500.webp 500w, ' + restImg + '_550.webp 550w, ' + restImg + '_600.webp 600w, ' + restImg + '_700.webp 700w, ' + restImg + '_800.webp 800w';
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
-
-/**
- * Handle review form
- */
-/*
-document.getElementById("reviewForm").addEventListener("submit", (event) => {
-  console.log(event);
-
-  return false;
-}); */
-
-/**
- * Handle review form
- */
-var processReview = function processReview(reviewID) {
-  var restaurant = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : self.restaurant;
-
-  /* TO DO: Check if form was submitted */
-
-  var name = document.reviewForm.name.value.trim();
-  var rating = document.reviewForm.rating.value;
-  var comments = document.reviewForm.comments.value;
-
-  var review = {
-    restaurant_id: restaurant.id,
-    name: name,
-    rating: rating,
-    comments: comments
-  };
-
-  console.log(reviewID);
-
-  postReview(review);
-
-  // location.reload();
-
-  return false;
-};
 
 function notifySWUpdates(reg) {
   console.log('There is a new Service Worker available');
