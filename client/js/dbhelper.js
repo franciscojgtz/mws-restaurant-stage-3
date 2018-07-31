@@ -172,6 +172,24 @@ var DBHelper = function () {
         return console.log('Success:', response);
       });
     }
+  }, {
+    key: 'updateIsFavortie',
+    value: function updateIsFavortie(id, state, callback) {
+      fetch('http://localhost:1337/restaurants/' + id + '/?is_favorite=' + state, {
+        method: 'put',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8'
+        }
+      }).then(function (res) {
+        return res.json();
+      }).catch(function (error) {
+        console.error('Error:', error);
+        callback(error, null);
+      }).then(function (response) {
+        console.log('Success:', response);
+        callback(null, response);
+      });
+    }
 
     /**
      * Fetch a restaurant by its ID.

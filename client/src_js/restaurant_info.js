@@ -73,6 +73,9 @@ const fetchRestaurantFromURL = (callback) => {
 const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
+  console.log(restaurant.is_favorite);
+  const isFavorite = document.getElementById('favorite-button');
+  isFavorite.innerHTML = restaurant.is_favorite ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -156,18 +159,13 @@ const deleteReview = (id) => {
   DBHelper.deleteReview(id);
 };
 
-const updateReview = (id) => {
-  const opts = {
-    name: 'Juan',
-    rating: 5,
-    comments: 'delicious!',
-  };
-  DBHelper.updateReview(id, opts);
+const updateReview = (id, review) => {
+  DBHelper.updateReview(id, review);
 };
 
-window.addEventListener('offline', function(e) { console.log('offline'); });
+window.addEventListener('offline', (e) => { console.log('offline'); });
 
-window.addEventListener('online', function(e) { console.log('online'); });
+window.addEventListener('online', (e) => { console.log('online'); });
 
 /**
  * Create all reviews HTML and add them to the webpage.
@@ -219,11 +217,11 @@ const createReviewHTML = (review) => {
 
 /**
  * convert 13 digit timestamp into month day, year
- * @param {13 digittimestamp} t
+ * @param {13 digittimestamp} timeStamp
  * @returns {month day, year}
  */
-const timeConverter = (t) => {
-  const a = new Date(t);
+const timeConverter = (timeStamp) => {
+  const a = new Date(timeStamp);
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'Septemeber', 'October', 'November', 'December'];
   const year = a.getFullYear();
   const month = months[a.getMonth()];
@@ -298,6 +296,15 @@ function createResponsiveImage(restaurant) {
   image.srcset = `${restImg}_300.webp 300w, ${restImg}_350.webp 350w, ${restImg}_400.webp 400w, ${restImg}_450.webp 450w, ${restImg}_500.webp 500w, ${restImg}_550.webp 550w, ${restImg}_600.webp 600w, ${restImg}_700.webp 700w, ${restImg}_800.webp 800w`;
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
+
+document.getElementById('favorite-button').addEventListener('click', () => {
+  console.log('button clicked');
+  DBHelper.updateIsFavortie(self.restaurant.id, !self.restaurant.is_favorite, (error, restaurant) => {
+    // reset link
+    self.restaurant = restaurant;
+  });
+
+});
 
 
 function notifySWUpdates(reg) {

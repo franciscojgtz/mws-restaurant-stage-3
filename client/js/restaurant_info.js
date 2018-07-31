@@ -80,6 +80,9 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
 
   var name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
+  console.log(restaurant.is_favorite);
+  var isFavorite = document.getElementById('favorite-button');
+  isFavorite.innerHTML = restaurant.is_favorite ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
 
   var address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -165,13 +168,8 @@ var deleteReview = function deleteReview(id) {
   DBHelper.deleteReview(id);
 };
 
-var updateReview = function updateReview(id) {
-  var opts = {
-    name: 'Juan',
-    rating: 5,
-    comments: 'delicious!'
-  };
-  DBHelper.updateReview(id, opts);
+var updateReview = function updateReview(id, review) {
+  DBHelper.updateReview(id, review);
 };
 
 window.addEventListener('offline', function (e) {
@@ -233,11 +231,11 @@ var createReviewHTML = function createReviewHTML(review) {
 
 /**
  * convert 13 digit timestamp into month day, year
- * @param {13 digittimestamp} t
+ * @param {13 digittimestamp} timeStamp
  * @returns {month day, year}
  */
-var timeConverter = function timeConverter(t) {
-  var a = new Date(t);
+var timeConverter = function timeConverter(timeStamp) {
+  var a = new Date(timeStamp);
   var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'Septemeber', 'October', 'November', 'December'];
   var year = a.getFullYear();
   var month = months[a.getMonth()];
@@ -320,6 +318,14 @@ function createResponsiveImage(restaurant) {
   image.srcset = restImg + '_300.webp 300w, ' + restImg + '_350.webp 350w, ' + restImg + '_400.webp 400w, ' + restImg + '_450.webp 450w, ' + restImg + '_500.webp 500w, ' + restImg + '_550.webp 550w, ' + restImg + '_600.webp 600w, ' + restImg + '_700.webp 700w, ' + restImg + '_800.webp 800w';
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
+
+document.getElementById('favorite-button').addEventListener('click', function () {
+  console.log('button clicked');
+  DBHelper.updateIsFavortie(self.restaurant.id, !self.restaurant.is_favorite, function (error, restaurant) {
+    // reset link
+    self.restaurant = restaurant;
+  });
+});
 
 function notifySWUpdates(reg) {
   console.log('There is a new Service Worker available');

@@ -147,6 +147,24 @@ class DBHelper {
       .then(response => console.log('Success:', response));
   }
 
+  static updateIsFavortie(id, state, callback) {
+    fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${state}`, {
+      method: 'put',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+    })
+      .then(res => res.json())
+      .catch((error) => {
+        console.error('Error:', error);
+        callback(error, null);
+      })
+      .then((response) => {
+        console.log('Success:', response);
+        callback(null, response);
+      });
+  }
+
   /**
    * Fetch a restaurant by its ID.
    */
