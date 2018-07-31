@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var restaurant = void 0;
 var newMap = void 0;
 var reviews = void 0;
@@ -80,9 +82,9 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
 
   var name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
-  console.log(restaurant.is_favorite);
-  var isFavorite = document.getElementById('favorite-button');
-  isFavorite.innerHTML = restaurant.is_favorite ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
+  console.log(_typeof(restaurant.is_favorite));
+  var favButton = document.getElementById('favorite-button');
+  favButton.innerHTML = restaurant.is_favorite == 'true' ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
 
   var address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -320,10 +322,17 @@ function createResponsiveImage(restaurant) {
 }
 
 document.getElementById('favorite-button').addEventListener('click', function () {
-  console.log('button clicked');
-  DBHelper.updateIsFavortie(self.restaurant.id, !self.restaurant.is_favorite, function (error, restaurant) {
+  var restaurant = self.restaurant;
+  console.log(restaurant);
+  var state = false;
+  if (restaurant.is_favorite == 'true') {
+    console.log(restaurant.is_favorite);
+    state = true;
+  }
+
+  DBHelper.updateIsFavortie(restaurant.id, !state, function (error, responseRestaurant) {
     // reset link
-    self.restaurant = restaurant;
+    self.restaurant = responseRestaurant;
   });
 });
 

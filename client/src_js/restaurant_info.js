@@ -73,9 +73,9 @@ const fetchRestaurantFromURL = (callback) => {
 const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
-  console.log(restaurant.is_favorite);
-  const isFavorite = document.getElementById('favorite-button');
-  isFavorite.innerHTML = restaurant.is_favorite ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
+  console.log(typeof restaurant.is_favorite);
+  const favButton = document.getElementById('favorite-button');
+  favButton.innerHTML = restaurant.is_favorite == 'true' ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -298,12 +298,18 @@ function createResponsiveImage(restaurant) {
 }
 
 document.getElementById('favorite-button').addEventListener('click', () => {
-  console.log('button clicked');
-  DBHelper.updateIsFavortie(self.restaurant.id, !self.restaurant.is_favorite, (error, restaurant) => {
+  const restaurant = self.restaurant;
+  console.log(restaurant);
+  let state = false;
+  if(restaurant.is_favorite == 'true') {
+    console.log(restaurant.is_favorite);
+    state = true;
+  }
+ 
+  DBHelper.updateIsFavortie(restaurant.id, !state, (error, responseRestaurant) => {
     // reset link
-    self.restaurant = restaurant;
+    self.restaurant = responseRestaurant;
   });
-
 });
 
 

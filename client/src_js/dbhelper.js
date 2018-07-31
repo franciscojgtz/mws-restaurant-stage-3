@@ -148,6 +148,8 @@ class DBHelper {
   }
 
   static updateIsFavortie(id, state, callback) {
+    console.log(typeof state);
+    console.log(`http://localhost:1337/restaurants/${id}/?is_favorite=${state}`);
     fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${state}`, {
       method: 'put',
       headers: {
