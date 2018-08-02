@@ -217,22 +217,14 @@ var DBHelper = function () {
   }, {
     key: 'fetchRestaurantById',
     value: function fetchRestaurantById(id, callback) {
-      // fetch all restaurants with proper error handling.
-      DBHelper.fetchRestaurants(function (error, restaurants) {
-        if (error) {
-          callback(error, null);
-        } else {
-          var restaurant = restaurants.find(function (r) {
-            return r.id == id;
-          });
-          if (restaurant) {
-            // Got the restaurant
-            callback(null, restaurant);
-          } else {
-            // Restaurant does not exist in the database
-            callback('Restaurant does not exist', null);
-          }
-        }
+      // fetch restaurant by id
+      fetch('http://localhost:1337/restaurants/' + id).then(function (response) {
+        return response.json();
+      }).then(function (fetchedRestaurant) {
+        console.log(fetchedRestaurant);
+        callback(null, fetchedRestaurant);
+      }).catch(function (err) {
+        return callback('Restaurant does not exist ' + err, null);
       });
     }
 
@@ -321,7 +313,7 @@ var DBHelper = function () {
           callback(error, null);
         } else {
           // Get all neighborhoods from all restaurants
-          var neighborhoods = restaurants.map(function (v, i) {
+          var neighborhoods = restaurants.map(function (_v, i) {
             return restaurants[i].neighborhood;
           });
           // Remove duplicates from neighborhoods
@@ -346,7 +338,7 @@ var DBHelper = function () {
           callback(error, null);
         } else {
           // Get all cuisines from all restaurants
-          var cuisines = restaurants.map(function (v, i) {
+          var cuisines = restaurants.map(function (_v, i) {
             return restaurants[i].cuisine_type;
           });
           // Remove duplicates from cuisines
@@ -385,7 +377,7 @@ var DBHelper = function () {
 
   }, {
     key: 'mapMarkerForRestaurant',
-    value: function mapMarkerForRestaurant(restaurant, map) {
+    value: function mapMarkerForRestaurant(restaurant, _map) {
       // https://leafletjs.com/reference-1.3.0.html#marker
       var marker = new L.marker([restaurant.latlng.lat, restaurant.latlng.lng], {
         title: restaurant.name,

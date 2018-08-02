@@ -186,19 +186,14 @@ class DBHelper {
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
-    // fetch all restaurants with proper error handling.
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        const restaurant = restaurants.find(r => r.id == id);
-        if (restaurant) { // Got the restaurant
-          callback(null, restaurant);
-        } else { // Restaurant does not exist in the database
-          callback('Restaurant does not exist', null);
-        }
-      }
-    });
+    // fetch restaurant by id
+    fetch(`http://localhost:1337/restaurants/${id}`)
+      .then(response => response.json())
+      .then((fetchedRestaurant) => {
+        console.log(fetchedRestaurant);
+        callback(null, fetchedRestaurant);
+      })
+      .catch(err => callback(`Restaurant does not exist ${err}`, null));
   }
 
   /**
@@ -264,7 +259,7 @@ class DBHelper {
         callback(error, null);
       } else {
         // Get all neighborhoods from all restaurants
-        const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
+        const neighborhoods = restaurants.map((_v, i) => restaurants[i].neighborhood);
         // Remove duplicates from neighborhoods
         const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
         callback(null, uniqueNeighborhoods);
@@ -282,7 +277,7 @@ class DBHelper {
         callback(error, null);
       } else {
         // Get all cuisines from all restaurants
-        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
+        const cuisines = restaurants.map((_v, i) => restaurants[i].cuisine_type);
         // Remove duplicates from cuisines
         const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
         callback(null, uniqueCuisines);
@@ -308,7 +303,7 @@ class DBHelper {
   /**
    * Map marker for a restaurant.
    */
-  static mapMarkerForRestaurant(restaurant, map) {
+  static mapMarkerForRestaurant(restaurant, _map) {
     // https://leafletjs.com/reference-1.3.0.html#marker
     const marker = new L.marker(
       [restaurant.latlng.lat, restaurant.latlng.lng],
