@@ -191,6 +191,9 @@ class DBHelper {
       .then(response => response.json())
       .then((fetchedRestaurant) => {
         console.log(fetchedRestaurant);
+        // TO DO: I need to push restaurant to cache
+        
+        DBHelper.placeRestaurantIntoIDB(fetchedRestaurant);
         callback(null, fetchedRestaurant);
       })
       .catch(err => callback(`Restaurant does not exist ${err}`, null));
@@ -356,6 +359,20 @@ class DBHelper {
       restaurants.forEach((restaurant) => {
         restaurantsStore.put(restaurant);
       });
+    });
+  }
+
+  /**
+   * Place Restaurant in IDB
+   * @param {*} restaurants
+   */
+  static placeRestaurantIntoIDB(restaurant) {
+    const dbPromise = DBHelper.openIDB();
+    dbPromise.then((db) => {
+      if (!db) return;
+      const tx = db.transaction('restaurants', 'readwrite');
+      const restaurantsStore = tx.objectStore('restaurants');
+      restaurantsStore.put(restaurant);
     });
   }
 

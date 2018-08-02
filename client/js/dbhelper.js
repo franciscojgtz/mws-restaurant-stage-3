@@ -222,6 +222,9 @@ var DBHelper = function () {
         return response.json();
       }).then(function (fetchedRestaurant) {
         console.log(fetchedRestaurant);
+        // TO DO: I need to push restaurant to cache
+
+        DBHelper.placeRestaurantIntoIDB(fetchedRestaurant);
         callback(null, fetchedRestaurant);
       }).catch(function (err) {
         return callback('Restaurant does not exist ' + err, null);
@@ -433,6 +436,23 @@ var DBHelper = function () {
         restaurants.forEach(function (restaurant) {
           restaurantsStore.put(restaurant);
         });
+      });
+    }
+
+    /**
+     * Place Restaurant in IDB
+     * @param {*} restaurants
+     */
+
+  }, {
+    key: 'placeRestaurantIntoIDB',
+    value: function placeRestaurantIntoIDB(restaurant) {
+      var dbPromise = DBHelper.openIDB();
+      dbPromise.then(function (db) {
+        if (!db) return;
+        var tx = db.transaction('restaurants', 'readwrite');
+        var restaurantsStore = tx.objectStore('restaurants');
+        restaurantsStore.put(restaurant);
       });
     }
 
