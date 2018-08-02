@@ -186,14 +186,17 @@ class DBHelper {
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
+    this.showCachedRestaurantByID(id)
+      .then((cachedRestaurant) => {
+        console.log(cachedRestaurant);
+      });
+
     // fetch restaurant by id
     fetch(`http://localhost:1337/restaurants/${id}`)
       .then(response => response.json())
       .then((fetchedRestaurant) => {
-        console.log(fetchedRestaurant);
-        // TO DO: I need to push restaurant to cache
-        
         DBHelper.placeRestaurantIntoIDB(fetchedRestaurant);
+        fetchedRestaurant.source = 'network';
         callback(null, fetchedRestaurant);
       })
       .catch(err => callback(`Restaurant does not exist ${err}`, null));
@@ -415,6 +418,18 @@ class DBHelper {
       if (!db) return Promise.resolve();
       const data = db.transaction('restaurants').objectStore('restaurants');
       return data.getAll().then(restaurants => restaurants);
+    });
+  }
+
+  /**
+   * Show Cached Restaurants
+   */
+  static showCachedRestaurantByID(id) {
+    const dbPromise = DBHelper.openIDB();
+    return dbPromise.then((db) => {
+      if (!db) return Promise.resolve();
+      const data = db.transaction('restaurants').objectStore('restaurants');
+      return data.get(parseInt(id)).then(restaurant => restaurant);
     });
   }
 
