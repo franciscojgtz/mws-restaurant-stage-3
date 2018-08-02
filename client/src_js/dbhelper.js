@@ -24,11 +24,18 @@ class DBHelper {
           .then(response => response.json())
           .then((fetchedRestaurants) => {
             DBHelper.placeRestaurantsIntoIDB(fetchedRestaurants);
-            console.log('restaurants from fetch');
+            fetchedRestaurants.map((restaurant) => {
+              restaurant.source = 'network';
+              return restaurant;
+            });
             callback(null, fetchedRestaurants);
           });
       } else {
-        console.log('restaurants from cache');
+        cachedRestaurants.map((restaurant) => {
+          restaurant.source = 'cache';
+          return restaurant;
+        });
+        console.log(cachedRestaurants);
         callback(null, cachedRestaurants);
       }
     })

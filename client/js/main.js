@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function (event) {
 });
 
 var getNeighborhoods = function getNeighborhoods(restaurants) {
-  console.log(restaurants);
   // Get all neighborhoods from all restaurants
   var neighborhoods = restaurants.map(function (v, i) {
     return restaurants[i].neighborhood;

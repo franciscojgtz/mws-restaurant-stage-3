@@ -31,11 +31,18 @@ var DBHelper = function () {
             return response.json();
           }).then(function (fetchedRestaurants) {
             DBHelper.placeRestaurantsIntoIDB(fetchedRestaurants);
-            console.log('restaurants from fetch');
+            fetchedRestaurants.map(function (restaurant) {
+              restaurant.source = 'network';
+              return restaurant;
+            });
             callback(null, fetchedRestaurants);
           });
         } else {
-          console.log('restaurants from cache');
+          cachedRestaurants.map(function (restaurant) {
+            restaurant.source = 'cache';
+            return restaurant;
+          });
+          console.log(cachedRestaurants);
           callback(null, cachedRestaurants);
         }
       }).catch(function (err) {

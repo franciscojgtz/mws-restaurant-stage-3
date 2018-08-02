@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 const getNeighborhoods = (restaurants) => {
-  console.log(restaurants);
   // Get all neighborhoods from all restaurants
   const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
   // Remove duplicates from neighborhoods
