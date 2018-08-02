@@ -301,7 +301,7 @@ document.getElementById('favorite-button').addEventListener('click', () => {
   const restaurant = self.restaurant;
   console.log(restaurant);
   let state = false;
-  if(restaurant.is_favorite == 'true') {
+  if(restaurant.is_favorite === 'true') {
     console.log(restaurant.is_favorite);
     state = true;
   }

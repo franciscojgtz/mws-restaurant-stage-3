@@ -15,9 +15,36 @@ var markers = [];
  */
 document.addEventListener('DOMContentLoaded', function (event) {
   initMap1(); // added
-  fetchNeighborhoods();
-  fetchCuisines();
+  //fetchNeighborhoods();
+  //fetchCuisines();
 });
+
+var getNeighborhoods = function getNeighborhoods(restaurants) {
+  console.log(restaurants);
+  // Get all neighborhoods from all restaurants
+  var neighborhoods = restaurants.map(function (v, i) {
+    return restaurants[i].neighborhood;
+  });
+  // Remove duplicates from neighborhoods
+  var uniqueNeighborhoods = neighborhoods.filter(function (v, i) {
+    return neighborhoods.indexOf(v) === i;
+  });
+  self.neighborhoods = uniqueNeighborhoods;
+  fillNeighborhoodsHTML();
+};
+
+var getCuisnes = function getCuisnes(restaurants) {
+  // Get all cuisines from all restaurants
+  var cuisines = restaurants.map(function (v, i) {
+    return restaurants[i].cuisine_type;
+  });
+  // Remove duplicates from cuisines
+  var uniqueCuisines = cuisines.filter(function (v, i) {
+    return cuisines.indexOf(v) === i;
+  });
+  self.cuisines = uniqueCuisines;
+  fillCuisinesHTML();
+};
 
 /**
  * Fetch all neighborhoods and set their HTML.
@@ -122,6 +149,10 @@ var updateRestaurants = function updateRestaurants() {
       // Got an error!
       console.error(error);
     } else {
+      if (cuisine === 'all' && neighborhood === 'all') {
+        getNeighborhoods(restaurants);
+        getCuisnes(restaurants);
+      }
       resetRestaurants(restaurants);
       fillRestaurantsHTML();
     }
