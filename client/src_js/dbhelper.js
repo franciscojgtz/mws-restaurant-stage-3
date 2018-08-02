@@ -63,6 +63,10 @@ class DBHelper {
           });
         } else {
           console.log('reviews from cache');
+          cachedReviews.map((review) => {
+            review.source = 'cache';
+            return review;
+          });
           callback(null, cachedReviews);
           this.getReviewsFromNetwork(restaurantID).then((fetchedReviews) => {
             callback(null, fetchedReviews);
@@ -91,7 +95,11 @@ class DBHelper {
       .then(response => response.json())
       .then((fetchedReviews) => {
         DBHelper.placeReviewsIntoIDB(fetchedReviews);
-        console.log('reviews from fetch');
+        console.log('reviews from network');
+        fetchedReviews.map((review) => {
+          review.source = 'network';
+          return review;
+        });
         return fetchedReviews;
       });
   }

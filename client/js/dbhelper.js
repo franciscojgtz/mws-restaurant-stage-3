@@ -74,6 +74,10 @@ var DBHelper = function () {
             });
           } else {
             console.log('reviews from cache');
+            cachedReviews.map(function (review) {
+              review.source = 'cache';
+              return review;
+            });
             callback(null, cachedReviews);
             _this.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
               callback(null, fetchedReviews);
@@ -105,7 +109,11 @@ var DBHelper = function () {
         return response.json();
       }).then(function (fetchedReviews) {
         DBHelper.placeReviewsIntoIDB(fetchedReviews);
-        console.log('reviews from fetch');
+        console.log('reviews from network');
+        fetchedReviews.map(function (review) {
+          review.source = 'network';
+          return review;
+        });
         return fetchedReviews;
       });
     }
