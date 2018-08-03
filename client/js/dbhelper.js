@@ -24,30 +24,39 @@ var DBHelper = function () {
      * Fetch all restaurants.
      */
     value: function fetchRestaurants(callback) {
+      var _this = this;
+
       this.showCachedRestaurants().then(function (cachedRestaurants) {
         if (cachedRestaurants === undefined || cachedRestaurants.length === 0) {
           // array empty or does not exist
-          fetch(DBHelper.DATABASE_URL).then(function (response) {
-            return response.json();
-          }).then(function (fetchedRestaurants) {
-            DBHelper.placeRestaurantsIntoIDB(fetchedRestaurants);
-            fetchedRestaurants.map(function (restaurant) {
-              restaurant.source = 'network';
-              return restaurant;
-            });
-            callback(null, fetchedRestaurants);
-          });
+          _this.getRestaurantsFromNetwork(callback);
         } else {
           cachedRestaurants.map(function (restaurant) {
             restaurant.source = 'cache';
             return restaurant;
           });
-          console.log(cachedRestaurants);
+          console.log('restaurants from cache');
           callback(null, cachedRestaurants);
+          _this.getRestaurantsFromNetwork(callback);
         }
       }).catch(function (err) {
         var error = 'Request failed. Returned status of ' + err;
         callback(error, null);
+      });
+    }
+  }, {
+    key: 'getRestaurantsFromNetwork',
+    value: function getRestaurantsFromNetwork(callback) {
+      fetch(DBHelper.DATABASE_URL).then(function (response) {
+        return response.json();
+      }).then(function (fetchedRestaurants) {
+        DBHelper.placeRestaurantsIntoIDB(fetchedRestaurants);
+        fetchedRestaurants.map(function (restaurant) {
+          restaurant.source = 'network';
+          return restaurant;
+        });
+        console.log('restaurants from network');
+        callback(null, fetchedRestaurants);
       });
     }
 
@@ -58,10 +67,10 @@ var DBHelper = function () {
   }, {
     key: 'fetchReviewsByRestaurantID',
     value: function fetchReviewsByRestaurantID(restaurantID, callback) {
-      var _this = this;
+      var _this2 = this;
 
       this.showCachedReviewsByRestaurantID(restaurantID).then(function (cachedReviews) {
-        _this.getDeferedReviews().then(function (deferedReviews) {
+        _this2.getDeferedReviews().then(function (deferedReviews) {
           deferedReviews.forEach(function (deferedReview) {
             if (restaurantID === deferedReview.restaurant_id) {
               cachedReviews.push(deferedReview);
@@ -69,7 +78,7 @@ var DBHelper = function () {
           });
           if (cachedReviews === undefined || cachedReviews.length === 0) {
             // array empty or does not exist
-            _this.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
+            _this2.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
               callback(null, fetchedReviews);
             });
           } else {
@@ -79,7 +88,7 @@ var DBHelper = function () {
               return review;
             });
             callback(null, cachedReviews);
-            _this.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
+            _this2.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
               callback(null, fetchedReviews);
             });
           }
@@ -89,17 +98,17 @@ var DBHelper = function () {
   }, {
     key: 'getReviewsFromNetwork',
     value: function getReviewsFromNetwork(restaurantID) {
-      var _this2 = this;
+      var _this3 = this;
 
       this.getDeferedReviews().then(function (deferedReviews) {
         deferedReviews.forEach(function (deferedReview) {
-          _this2.postReview(deferedReview, function (error, reviewResponse) {
+          _this3.postReview(deferedReview, function (error, reviewResponse) {
             // delete review from defered-reviews store
             console.log(reviewResponse.restaurant_id);
             if (error) {
               console.log(error);
             } else {
-              _this2.deleteDeferedReviewByRestaurantID(reviewResponse.restaurant_id);
+              _this3.deleteDeferedReviewByRestaurantID(reviewResponse.restaurant_id);
             }
           });
         });
@@ -126,7 +135,7 @@ var DBHelper = function () {
   }, {
     key: 'postReview',
     value: function postReview(review, callback) {
-      var _this3 = this;
+      var _this4 = this;
 
       fetch('http://localhost:1337/reviews/', {
         method: 'post',
@@ -146,7 +155,7 @@ var DBHelper = function () {
         var timeStamp = Date.now();
         review.createdAt = timeStamp;
         review.updatedAt = timeStamp;
-        _this3.placedeferedReviewsIntoIDB(review);
+        _this4.placedeferedReviewsIntoIDB(review);
         callback(error, review);
       });
     }
@@ -217,32 +226,29 @@ var DBHelper = function () {
   }, {
     key: 'fetchRestaurantById',
     value: function fetchRestaurantById(id, callback) {
-      var _this4 = this;
+      var _this5 = this;
 
       this.showCachedRestaurantByID(id).then(function (cachedRestaurant) {
-        console.log(cachedRestaurant);
         if (cachedRestaurant === undefined || cachedRestaurant.length === 0) {
-          _this4.getRestaurantFromNetwork(id).then(function (fetchedRestaurant) {
-            callback(null, fetchedRestaurant);
-          });
+          _this5.getRestaurantFromNetwork(id, callback);
         } else {
           console.log('restaurant from cache');
           cachedRestaurant.source = 'cache';
           callback(null, cachedRestaurant);
+          _this5.getRestaurantFromNetwork(id, callback);
         }
       });
     }
   }, {
     key: 'getRestaurantFromNetwork',
-    value: function getRestaurantFromNetwork(id) {
-      return fetch('http://localhost:1337/restaurants/' + id).then(function (response) {
+    value: function getRestaurantFromNetwork(id, callback) {
+      fetch('http://localhost:1337/restaurants/' + id).then(function (response) {
         return response.json();
       }).then(function (fetchedRestaurant) {
-        console.log('restaurant from network');
         DBHelper.placeRestaurantIntoIDB(fetchedRestaurant);
         fetchedRestaurant.source = 'network';
-        console.log(fetchedRestaurant);
-        return fetchedRestaurant;
+        console.log('restaurant from network');
+        callback(null, fetchedRestaurant);
       }).catch(function (err) {
         return err;
       });

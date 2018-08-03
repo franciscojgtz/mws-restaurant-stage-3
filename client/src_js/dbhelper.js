@@ -20,28 +20,34 @@ class DBHelper {
     this.showCachedRestaurants().then((cachedRestaurants) => {
       if (cachedRestaurants === undefined || cachedRestaurants.length === 0) {
         // array empty or does not exist
-        fetch(DBHelper.DATABASE_URL)
-          .then(response => response.json())
-          .then((fetchedRestaurants) => {
-            DBHelper.placeRestaurantsIntoIDB(fetchedRestaurants);
-            fetchedRestaurants.map((restaurant) => {
-              restaurant.source = 'network';
-              return restaurant;
-            });
-            callback(null, fetchedRestaurants);
-          });
+        this.getRestaurantsFromNetwork(callback);
       } else {
         cachedRestaurants.map((restaurant) => {
           restaurant.source = 'cache';
           return restaurant;
         });
-        console.log(cachedRestaurants);
+        console.log('restaurants from cache');
         callback(null, cachedRestaurants);
+        this.getRestaurantsFromNetwork(callback);
       }
     })
       .catch((err) => {
         const error = (`Request failed. Returned status of ${err}`);
         callback(error, null);
+      });
+  }
+
+  static getRestaurantsFromNetwork(callback) {
+    fetch(DBHelper.DATABASE_URL)
+      .then(response => response.json())
+      .then((fetchedRestaurants) => {
+        DBHelper.placeRestaurantsIntoIDB(fetchedRestaurants);
+        fetchedRestaurants.map((restaurant) => {
+          restaurant.source = 'network';
+          return restaurant;
+        });
+        console.log('restaurants from network');
+        callback(null, fetchedRestaurants);
       });
   }
 
@@ -188,28 +194,25 @@ class DBHelper {
   static fetchRestaurantById(id, callback) {
     this.showCachedRestaurantByID(id)
       .then((cachedRestaurant) => {
-        console.log(cachedRestaurant);
         if (cachedRestaurant === undefined || cachedRestaurant.length === 0) {
-          this.getRestaurantFromNetwork(id).then((fetchedRestaurant) => {
-            callback(null, fetchedRestaurant);
-          });
+          this.getRestaurantFromNetwork(id, callback);
         } else {
           console.log('restaurant from cache');
           cachedRestaurant.source = 'cache';
           callback(null, cachedRestaurant);
+          this.getRestaurantFromNetwork(id, callback);
         }
       });
   }
 
-  static getRestaurantFromNetwork(id) {
-    return fetch(`http://localhost:1337/restaurants/${id}`)
+  static getRestaurantFromNetwork(id, callback) {
+    fetch(`http://localhost:1337/restaurants/${id}`)
       .then(response => response.json())
       .then((fetchedRestaurant) => {
-        console.log('restaurant from network');
         DBHelper.placeRestaurantIntoIDB(fetchedRestaurant);
         fetchedRestaurant.source = 'network';
-        console.log(fetchedRestaurant);
-        return fetchedRestaurant;
+        console.log('restaurant from network');
+        callback(null, fetchedRestaurant);
       })
       .catch(err => err);
   }
