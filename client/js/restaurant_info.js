@@ -66,6 +66,11 @@ var fetchRestaurantFromURL = function fetchRestaurantFromURL(callback) {
       }
       // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, function (error, reviews) {
+        if (self.reviews !== undefined) {
+          if (self.reviews[0].source === 'network') {
+            return;
+          }
+        }
         self.reviews = reviews;
         fillRestaurantHTML();
       });
