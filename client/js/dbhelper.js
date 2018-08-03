@@ -217,19 +217,34 @@ var DBHelper = function () {
   }, {
     key: 'fetchRestaurantById',
     value: function fetchRestaurantById(id, callback) {
+      var _this4 = this;
+
       this.showCachedRestaurantByID(id).then(function (cachedRestaurant) {
         console.log(cachedRestaurant);
+        if (cachedRestaurant === undefined || cachedRestaurant.length === 0) {
+          _this4.getRestaurantFromNetwork(id).then(function (fetchedRestaurant) {
+            callback(null, fetchedRestaurant);
+          });
+        } else {
+          console.log('restaurant from cache');
+          cachedRestaurant.source = 'cache';
+          callback(null, cachedRestaurant);
+        }
       });
-
-      // fetch restaurant by id
-      fetch('http://localhost:1337/restaurants/' + id).then(function (response) {
+    }
+  }, {
+    key: 'getRestaurantFromNetwork',
+    value: function getRestaurantFromNetwork(id) {
+      return fetch('http://localhost:1337/restaurants/' + id).then(function (response) {
         return response.json();
       }).then(function (fetchedRestaurant) {
+        console.log('restaurant from network');
         DBHelper.placeRestaurantIntoIDB(fetchedRestaurant);
         fetchedRestaurant.source = 'network';
-        callback(null, fetchedRestaurant);
+        console.log(fetchedRestaurant);
+        return fetchedRestaurant;
       }).catch(function (err) {
-        return callback('Restaurant does not exist ' + err, null);
+        return err;
       });
     }
 
