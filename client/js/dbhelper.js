@@ -8,9 +8,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 // import idb from 'idb';
 // const idb = require('idb');
+
+var reviewsSource = null;
 /**
  * Common database helper functions.
  */
+
 var DBHelper = function () {
   function DBHelper() {
     _classCallCheck(this, DBHelper);
@@ -69,6 +72,17 @@ var DBHelper = function () {
     value: function fetchReviewsByRestaurantID(restaurantID, callback) {
       var _this2 = this;
 
+      if (this.getReviewsSource === 'network') {
+        return;
+      }
+
+      // Get Reviews from network
+      this.getReviewsFromNetwork(restaurantID, callback);
+
+      if (this.getReviewsSource === 'cache') {
+        return;
+      }
+
       this.showCachedReviewsByRestaurantID(restaurantID).then(function (cachedReviews) {
         _this2.getDeferedReviews().then(function (deferedReviews) {
           deferedReviews.forEach(function (deferedReview) {
@@ -78,26 +92,24 @@ var DBHelper = function () {
           });
           if (cachedReviews === undefined || cachedReviews.length === 0) {
             // array empty or does not exist
-            _this2.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
-              callback(null, fetchedReviews);
-            });
+            // this.getReviewsFromNetwork(restaurantID, callback);
           } else {
             console.log('reviews from cache');
             cachedReviews.map(function (review) {
               review.source = 'cache';
               return review;
             });
+            if (cachedReviews.length > 0) {
+              _this2.setReviewsSource = 'cache';
+            }
             callback(null, cachedReviews);
-            _this2.getReviewsFromNetwork(restaurantID).then(function (fetchedReviews) {
-              callback(null, fetchedReviews);
-            });
           }
         });
       });
     }
   }, {
     key: 'getReviewsFromNetwork',
-    value: function getReviewsFromNetwork(restaurantID) {
+    value: function getReviewsFromNetwork(restaurantID, callback) {
       var _this3 = this;
 
       this.getDeferedReviews().then(function (deferedReviews) {
@@ -114,16 +126,19 @@ var DBHelper = function () {
         });
       });
 
-      return fetch('http://localhost:1337/reviews/?restaurant_id=' + restaurantID).then(function (response) {
+      fetch('http://localhost:1337/reviews/?restaurant_id=' + restaurantID).then(function (response) {
         return response.json();
       }).then(function (fetchedReviews) {
         DBHelper.placeReviewsIntoIDB(fetchedReviews);
         console.log('reviews from network');
+        if (fetchedReviews.length > 0) {
+          _this3.setReviewsSource = 'network';
+        }
         fetchedReviews.map(function (review) {
           review.source = 'network';
           return review;
         });
-        return fetchedReviews;
+        callback(null, fetchedReviews);
       });
     }
 
@@ -600,16 +615,26 @@ var DBHelper = function () {
         reviewsStore.delete(restaurantID);
         return tx.complete;
       }).then(function () {
-        console.log('Item deleted');
+        console.log('Deffered Review deleted from restaurant ' + restaurantID);
       });
     }
   }, {
-    key: 'DATABASE_URL',
-
+    key: 'getReviewsSource',
+    get: function get() {
+      return reviewsSource;
+    }
+  }, {
+    key: 'setReviewsSource',
+    set: function set(source) {
+      reviewsSource = source;
+    }
     /**
      * Database URL.
      * Change this to restaurants.json file location on your server.
      */
+
+  }, {
+    key: 'DATABASE_URL',
     get: function get() {
       var port = 1337; // Change this to your server port
       return 'http://localhost:1337/restaurants';

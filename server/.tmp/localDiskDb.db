@@ -212,8 +212,8 @@
           "Sunday": "5:00 pm - 10:00 pm"
         },
         "createdAt": 1504095567191,
-        "updatedAt": 1504095567191,
-        "is_favorite": false,
+        "updatedAt": "2018-08-04T02:07:35.949Z",
+        "is_favorite": "true",
         "id": 9
       },
       {
@@ -1180,6 +1180,15 @@
         "createdAt": 1532993049906,
         "updatedAt": 1532993049906,
         "id": 108
+      },
+      {
+        "restaurant_id": 9,
+        "name": "Julia",
+        "rating": "4",
+        "comments": "This best Chinesse restaurant in town!",
+        "createdAt": 1533350856452,
+        "updatedAt": 1533350856452,
+        "id": 109
       }
     ]
   },
@@ -1235,7 +1244,7 @@
       "id": 10
     },
     "reviews": {
-      "id": 108
+      "id": 109
     }
   }
 }
