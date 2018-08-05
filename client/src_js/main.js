@@ -13,8 +13,8 @@ const markers = [];
  */
 document.addEventListener('DOMContentLoaded', (event) => {
   initMap1(); // added
-  //fetchNeighborhoods();
-  //fetchCuisines();
+  // fetchNeighborhoods();
+  // fetchCuisines();
 });
 
 const getNeighborhoods = (restaurants) => {
@@ -55,9 +55,14 @@ const fetchNeighborhoods = () => {
  */
 const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
   const select = document.getElementById('neighborhoods-select');
-  
-  //TO DO: CHECK COULD CAUSE A PAINT ISSUE
+
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
   select.innerHTML = '';
+  const optionAll = document.createElement('option');
+  optionAll.innerHTML = 'All Neighborhoods';
+  optionAll.value = 'all';
+  select.append(optionAll);
+
 
   neighborhoods.forEach((neighborhood) => {
     const option = document.createElement('option');
@@ -88,8 +93,15 @@ const fetchCuisines = () => {
 const fillCuisinesHTML = (cuisines = self.cuisines) => {
   const select = document.getElementById('cuisines-select');
 
-  //TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
   select.innerHTML = '';
+
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
+  const optionAll = document.createElement('option');
+  optionAll.innerHTML = 'All Cuisines';
+  optionAll.value = 'all';
+  select.append(optionAll);
 
   cuisines.forEach((cuisine) => {
     const option = document.createElement('option');
@@ -138,7 +150,7 @@ const updateRestaurants = () => {
     if (error) { // Got an error!
       console.error(error);
     } else {
-      if(cuisine === 'all' && neighborhood === 'all') {
+      if (cuisine === 'all' && neighborhood === 'all') {
         getNeighborhoods(restaurants);
         getCuisnes(restaurants);
       }
@@ -181,6 +193,13 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
  */
 const createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
+
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
+    const favorite = document.createElement('p');
+    favorite.classList.add('favorite-icon');
+    favorite.innerHTML = '★';
+    li.append(favorite);
+  }
 
   if (restaurant.photograph) {
     const pictureElement = createResponsiveImage(restaurant);

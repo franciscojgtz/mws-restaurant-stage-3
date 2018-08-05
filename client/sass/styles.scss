@@ -238,6 +238,7 @@ nav[aria-label="breadcrumb"] {
 }
 
 .restaurants-list li {
+  position: relative;
   background-color: #fff;
   border-radius: 1rem;
   border: 2px solid #ccc;
@@ -473,4 +474,13 @@ nav[aria-label="breadcrumb"] {
   position: fixed;
   bottom: 0;
   right: 0;
+}
+
+.restaurants-list .favorite-icon {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  font-size: 4rem;
+  color: goldenrod;
+  text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
 }

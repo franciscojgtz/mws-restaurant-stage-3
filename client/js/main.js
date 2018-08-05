@@ -15,8 +15,8 @@ var markers = [];
  */
 document.addEventListener('DOMContentLoaded', function (event) {
   initMap1(); // added
-  //fetchNeighborhoods();
-  //fetchCuisines();
+  // fetchNeighborhoods();
+  // fetchCuisines();
 });
 
 var getNeighborhoods = function getNeighborhoods(restaurants) {
@@ -69,8 +69,12 @@ var fillNeighborhoodsHTML = function fillNeighborhoodsHTML() {
 
   var select = document.getElementById('neighborhoods-select');
 
-  //TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
   select.innerHTML = '';
+  var optionAll = document.createElement('option');
+  optionAll.innerHTML = 'All Neighborhoods';
+  optionAll.value = 'all';
+  select.append(optionAll);
 
   neighborhoods.forEach(function (neighborhood) {
     var option = document.createElement('option');
@@ -104,8 +108,15 @@ var fillCuisinesHTML = function fillCuisinesHTML() {
 
   var select = document.getElementById('cuisines-select');
 
-  //TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
   select.innerHTML = '';
+
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
+  var optionAll = document.createElement('option');
+  optionAll.innerHTML = 'All Cuisines';
+  optionAll.value = 'all';
+  select.append(optionAll);
 
   cuisines.forEach(function (cuisine) {
     var option = document.createElement('option');
@@ -202,6 +213,13 @@ var fillRestaurantsHTML = function fillRestaurantsHTML() {
  */
 var createRestaurantHTML = function createRestaurantHTML(restaurant) {
   var li = document.createElement('li');
+
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
+    var favorite = document.createElement('p');
+    favorite.classList.add('favorite-icon');
+    favorite.innerHTML = '★';
+    li.append(favorite);
+  }
 
   if (restaurant.photograph) {
     var pictureElement = createResponsiveImage(restaurant);

@@ -60,7 +60,7 @@ const fetchRestaurantFromURL = (callback) => {
       // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, (error, reviews) => {
         if (self.reviews !== undefined) {
-          if(self.reviews[0].source === 'network') {
+          if (self.reviews[0].source === 'network') {
             return;
           }
         }
@@ -80,7 +80,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   name.innerHTML = restaurant.name;
   console.log(typeof restaurant.is_favorite);
   const favButton = document.getElementById('favorite-button');
-  favButton.innerHTML = restaurant.is_favorite == 'true' ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
+  favButton.innerHTML = restaurant.is_favorite === 'true' || restaurant.is_favorite === true ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -306,11 +306,11 @@ document.getElementById('favorite-button').addEventListener('click', () => {
   const restaurant = self.restaurant;
   console.log(restaurant);
   let state = false;
-  if(restaurant.is_favorite === 'true') {
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
     console.log(restaurant.is_favorite);
     state = true;
   }
- 
+
   DBHelper.updateIsFavortie(restaurant.id, !state, (error, responseRestaurant) => {
     // reset link
     self.restaurant = responseRestaurant;

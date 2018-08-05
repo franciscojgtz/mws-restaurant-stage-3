@@ -89,7 +89,7 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
   name.innerHTML = restaurant.name;
   console.log(_typeof(restaurant.is_favorite));
   var favButton = document.getElementById('favorite-button');
-  favButton.innerHTML = restaurant.is_favorite == 'true' ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
+  favButton.innerHTML = restaurant.is_favorite === 'true' || restaurant.is_favorite === true ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
 
   var address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -330,7 +330,7 @@ document.getElementById('favorite-button').addEventListener('click', function ()
   var restaurant = self.restaurant;
   console.log(restaurant);
   var state = false;
-  if (restaurant.is_favorite === 'true') {
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
     console.log(restaurant.is_favorite);
     state = true;
   }
