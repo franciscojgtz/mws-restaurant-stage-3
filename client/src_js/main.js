@@ -55,6 +55,10 @@ const fetchNeighborhoods = () => {
  */
 const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
   const select = document.getElementById('neighborhoods-select');
+  
+  //TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
+
   neighborhoods.forEach((neighborhood) => {
     const option = document.createElement('option');
     option.innerHTML = neighborhood;
@@ -83,6 +87,9 @@ const fetchCuisines = () => {
  */
 const fillCuisinesHTML = (cuisines = self.cuisines) => {
   const select = document.getElementById('cuisines-select');
+
+  //TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
 
   cuisines.forEach((cuisine) => {
     const option = document.createElement('option');

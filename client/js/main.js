@@ -68,6 +68,10 @@ var fillNeighborhoodsHTML = function fillNeighborhoodsHTML() {
   var neighborhoods = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.neighborhoods;
 
   var select = document.getElementById('neighborhoods-select');
+
+  //TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
+
   neighborhoods.forEach(function (neighborhood) {
     var option = document.createElement('option');
     option.innerHTML = neighborhood;
@@ -99,6 +103,9 @@ var fillCuisinesHTML = function fillCuisinesHTML() {
   var cuisines = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.cuisines;
 
   var select = document.getElementById('cuisines-select');
+
+  //TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
 
   cuisines.forEach(function (cuisine) {
     var option = document.createElement('option');
