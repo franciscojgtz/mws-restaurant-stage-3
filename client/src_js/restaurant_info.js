@@ -166,6 +166,7 @@ document.getElementById('reviews-form').addEventListener('submit', (event) => {
     const ul = document.getElementById('reviews-list');
     ul.appendChild(createReviewHTML(reviewResponse));
     container.appendChild(ul);
+    document.getElementById('reviews-form-container').innerHTML = '<h3 class="review-form-container__message--sucess">Thank you for adding a review!</h3>';
   });
 }, false);
 
@@ -311,6 +312,9 @@ function createResponsiveImage(restaurant) {
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
 
+/**
+ * listen for click events on button-favorite
+ */
 document.getElementById('button-favorite').addEventListener('click', () => {
   const restaurant = self.restaurant;
   console.log(restaurant);

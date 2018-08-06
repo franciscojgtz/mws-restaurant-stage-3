@@ -459,6 +459,13 @@ nav[aria-label="breadcrumb"] {
 
 .reviews-form-container {
   width: 100%;
+
+  .review-form-container__message--sucess {
+    padding: 2rem;
+    text-align: center;
+    font-size: 2.2rem;
+    color: #008339;
+  }
 }
 .reviews-form {
   width: 100%;
