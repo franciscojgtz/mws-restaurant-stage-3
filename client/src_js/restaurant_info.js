@@ -134,11 +134,12 @@ const fetchReviewsByRestaurantID = (restaurantID, callback) => {
 /**
  * Handle review form
  */
-document.getElementById('reviewForm').addEventListener('submit', (event) => {
+document.getElementById('reviews-form').addEventListener('submit', (event) => {
   event.preventDefault();
-  const name = document.reviewForm.name.value.trim();
-  const rating = document.reviewForm.rating.value;
-  const comments = document.reviewForm.comments.value;
+  const reviewsForm = document.getElementById('reviews-form');
+  const name = reviewsForm.elements['name'].value.trim();
+  const rating = reviewsForm.elements['rating'].value;
+  const comments = reviewsForm.elements['comments'].value;
 
   const review = {
     restaurant_id: restaurant.id,
@@ -150,7 +151,7 @@ document.getElementById('reviewForm').addEventListener('submit', (event) => {
   DBHelper.postReview(review, (error, reviewResponse) => {
     // what do i want to happen after review is in database
 
-    document.getElementById('reviewForm').reset();
+    document.getElementById('reviews-form').reset();
 
     // add review with others
     const container = document.getElementById('reviews-container');
