@@ -205,6 +205,7 @@ class DBHelper {
       })
       .then((response) => {
         console.log('Success:', response);
+        DBHelper.placeRestaurantIntoIDB(response);
         callback(null, response);
       });
   }

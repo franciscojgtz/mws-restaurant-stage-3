@@ -436,6 +436,80 @@ nav[aria-label="breadcrumb"] {
   font-size: 1.5rem;
 }
 
+.button-favorite {
+  font-size: 4rem;
+  padding: 1rem;
+  border-radius: 50%;
+  cursor: pointer;
+  background-color: transparent;
+}
+
+.button-favorite--favorite {
+  color: #d39908;
+  
+}
+
+.button-favorite--notfavorite {
+  color: #666;
+}
+
+.restaurant-isfavorite {
+  text-align: center;
+}
+
+.reviews-form-container {
+  width: 100%;
+}
+.reviews-form {
+  width: 100%;
+  font-size: 1.8rem;
+  margin: 2rem auto;
+  background-color: #a6d6ee;
+  border-radius: 2rem;
+
+  .reviews-form__fieldset {
+    border: 0;
+  }
+
+  .reviews-form__legend {
+    font-size: 2rem;
+    padding: 2rem;
+    background-color: #252831;
+    color: #fff;
+    border-radius: 0 0 .5rem .5rem;
+  }
+
+  .reviews-form__name-label, .reviews-form__rating-label, .reviews-form__comments-label {
+    width: 100%;
+    display: inline-block;
+    padding: 1.2rem 0;
+  }
+
+  .reviews-form__name-input, .reviews-form__comments-textarea {
+    width: 100%;
+    padding: 1.2rem;
+  }
+
+  .reviews-form__comments-textarea {
+    height: 200px;
+  }
+
+  .reviews-form__rating-input {
+    width: 50px;
+    padding: 1.2rem;
+  }
+
+  .reviews-form__submit {
+    font-size: 1.8rem;
+    background-color: #008339;
+    color: #fff;
+    padding: 1rem 1.2rem;
+    border-radius: 10%;
+    margin-top: 2rem;
+    cursor: pointer;
+  }
+}
+
 .skip-link {
   position: absolute;
   top: -40px;
@@ -481,6 +555,6 @@ nav[aria-label="breadcrumb"] {
   top: 1rem;
   left: 1rem;
   font-size: 4rem;
-  color: goldenrod;
-  text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+  color: #d39908;
+  text-shadow: -2px 0 #000, 0 2px #000, 2px 0 #000, 0 -2px #000;
 }

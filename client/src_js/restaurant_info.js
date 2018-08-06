@@ -79,8 +79,16 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
   console.log(typeof restaurant.is_favorite);
-  const favButton = document.getElementById('favorite-button');
-  favButton.innerHTML = restaurant.is_favorite === 'true' || restaurant.is_favorite === true ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
+  const favButton = document.getElementById('button-favorite');
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
+    favButton.innerHTML = '★';
+    favButton.classList.add('button-favorite--favorite');
+  } else {
+    favButton.innerHTML = '☆';
+    favButton.classList.add('button-favorite--not-favorite');
+  }
+
+  // favButton.innerHTML = restaurant.is_favorite === 'true' || restaurant.is_favorite === true ? '★' : '☆';
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -137,9 +145,9 @@ const fetchReviewsByRestaurantID = (restaurantID, callback) => {
 document.getElementById('reviews-form').addEventListener('submit', (event) => {
   event.preventDefault();
   const reviewsForm = document.getElementById('reviews-form');
-  const name = reviewsForm.elements['name'].value.trim();
-  const rating = reviewsForm.elements['rating'].value;
-  const comments = reviewsForm.elements['comments'].value;
+  const name = reviewsForm.elements.name.value.trim();
+  const rating = reviewsForm.elements.rating.value;
+  const comments = reviewsForm.elements['reviews-form__comments-textarea'].value;
 
   const review = {
     restaurant_id: restaurant.id,
@@ -303,7 +311,7 @@ function createResponsiveImage(restaurant) {
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
 
-document.getElementById('favorite-button').addEventListener('click', () => {
+document.getElementById('button-favorite').addEventListener('click', () => {
   const restaurant = self.restaurant;
   console.log(restaurant);
   let state = false;
@@ -315,6 +323,16 @@ document.getElementById('favorite-button').addEventListener('click', () => {
   DBHelper.updateIsFavortie(restaurant.id, !state, (error, responseRestaurant) => {
     // reset link
     self.restaurant = responseRestaurant;
+    const favButton = document.getElementById('button-favorite');
+    if (responseRestaurant.is_favorite === 'true' || responseRestaurant.is_favorite === true) {
+      favButton.innerHTML = '★';
+      favButton.classList.add('button-favorite--favorite');
+      favButton.classList.remove('button-favorite--not-favorite');
+    } else {
+      favButton.innerHTML = '☆';
+      favButton.classList.add('button-favorite--not-favorite');
+      favButton.classList.remove('button-favorite--favorite');
+    }
   });
 });
 

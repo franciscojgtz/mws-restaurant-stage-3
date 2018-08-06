@@ -88,8 +88,16 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
   var name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
   console.log(_typeof(restaurant.is_favorite));
-  var favButton = document.getElementById('favorite-button');
-  favButton.innerHTML = restaurant.is_favorite === 'true' || restaurant.is_favorite === true ? '★ FAVORITE' : '☆ MARK AS FAVORITE';
+  var favButton = document.getElementById('button-favorite');
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
+    favButton.innerHTML = '★';
+    favButton.classList.add('button-favorite--favorite');
+  } else {
+    favButton.innerHTML = '☆';
+    favButton.classList.add('button-favorite--not-favorite');
+  }
+
+  // favButton.innerHTML = restaurant.is_favorite === 'true' || restaurant.is_favorite === true ? '★' : '☆';
 
   var address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -148,9 +156,9 @@ var fetchReviewsByRestaurantID = function fetchReviewsByRestaurantID(restaurantI
 document.getElementById('reviews-form').addEventListener('submit', function (event) {
   event.preventDefault();
   var reviewsForm = document.getElementById('reviews-form');
-  var name = reviewsForm.elements['name'].value.trim();
-  var rating = reviewsForm.elements['rating'].value;
-  var comments = reviewsForm.elements['comments'].value;
+  var name = reviewsForm.elements.name.value.trim();
+  var rating = reviewsForm.elements.rating.value;
+  var comments = reviewsForm.elements['reviews-form__comments-textarea'].value;
 
   var review = {
     restaurant_id: restaurant.id,
@@ -327,7 +335,7 @@ function createResponsiveImage(restaurant) {
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
 
-document.getElementById('favorite-button').addEventListener('click', function () {
+document.getElementById('button-favorite').addEventListener('click', function () {
   var restaurant = self.restaurant;
   console.log(restaurant);
   var state = false;
@@ -339,6 +347,16 @@ document.getElementById('favorite-button').addEventListener('click', function ()
   DBHelper.updateIsFavortie(restaurant.id, !state, function (error, responseRestaurant) {
     // reset link
     self.restaurant = responseRestaurant;
+    var favButton = document.getElementById('button-favorite');
+    if (responseRestaurant.is_favorite === 'true' || responseRestaurant.is_favorite === true) {
+      favButton.innerHTML = '★';
+      favButton.classList.add('button-favorite--favorite');
+      favButton.classList.remove('button-favorite--not-favorite');
+    } else {
+      favButton.innerHTML = '☆';
+      favButton.classList.add('button-favorite--not-favorite');
+      favButton.classList.remove('button-favorite--favorite');
+    }
   });
 });
 

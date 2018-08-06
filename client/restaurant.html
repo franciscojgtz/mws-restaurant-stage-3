@@ -48,7 +48,7 @@
     <!-- Beginning restaurant -->
     <section id="restaurant-container" class="restaurant-container">
       <h2 id="restaurant-name" class="restaurant-name"></h2>
-      <p id="restaurant-isfavorite" class="restaurant-isfavorite"><button id="favorite-button"></button></p>
+      <p id="restaurant-isfavorite" class="restaurant-isfavorite"><button id="button-favorite" class="button-favorite"></button></p>
       <img id="restaurant-img" class="restaurant-img">
       <p id="restaurant-cuisine" class="restaurant-cuisine"></p>
       <p id="restaurant-address" class="restaurant-address"></p>
@@ -62,19 +62,22 @@
     </section>
     <!-- End reviews -->
     <!-- Add Reviews Form-->
-    <!--TO DO
-      add label
-    -->
-    <form name="reviews-form" id="reviews-form" action="" method="post">
-      <fieldset>
-        <legend>Submit Review</legend>
-        Name: <input type="text" name="name" required><br />
-        Rating: <input type="number" name="rating" min="1" max="5" required><br />
-        <textarea id="comments" required></textarea><br />
-        <input type="submit" value="Submit">
-      </fieldset>
-    </form>
-    <!-- End Reviews Form-->
+    <section class="reviews-form-container">
+      <form name="reviews-form" id="reviews-form" class="reviews-form" action="" method="post">
+        <fieldset class="reviews-form__fieldset">
+          <legend class="reviews-form__legend">Submit Review</legend>
+          <label for="reviews-form__name-input" class="reviews-form__name-label">Name</label>
+          <input type="text" name="name" class="reviews-form__name-input" id="reviews-form__name-input" required>
+          <label for="reviews-form__rating-input" class="reviews-form__rating-label">Rating</label>
+          <input type="number" name="rating" class="reviews-form__rating-input" id="reviews-form__rating-input" min="1" max="5" required>
+          <label for="reviews-form__comments-textarea" class="reviews-form__comments-label">Comments</label>
+          <textarea class="reviews-form__comments-textarea" id="reviews-form__comments-textarea"required></textarea>
+          <input class="reviews-form__submit" type="submit" value="Submit">
+        </fieldset>
+      </form>
+      <!-- End Reviews Form-->
+    </section>
+    
   </main>
   <!-- End main -->
 

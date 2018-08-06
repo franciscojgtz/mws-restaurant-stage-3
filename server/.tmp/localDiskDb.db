@@ -93,8 +93,8 @@
           "Sunday": "Sat - 10:30 pm"
         },
         "createdAt": 1504095567091,
-        "updatedAt": "2018-07-31T02:38:25.063Z",
-        "is_favorite": "false",
+        "updatedAt": "2018-08-06T20:42:00.426Z",
+        "is_favorite": "true",
         "id": 4
       },
       {
@@ -236,8 +236,8 @@
           "Sunday": "11:00 am - 12:00 am"
         },
         "createdAt": 1504095567183,
-        "updatedAt": 1504095567183,
-        "is_favorite": false,
+        "updatedAt": "2018-08-06T05:28:47.225Z",
+        "is_favorite": "true",
         "id": 10
       }
     ],
@@ -1244,6 +1244,33 @@
         "createdAt": "2018-08-06T02:25:56.640Z",
         "updatedAt": "2018-08-06T02:25:56.640Z",
         "id": 115
+      },
+      {
+        "restaurant_id": 1,
+        "name": "3",
+        "rating": "4",
+        "comments": "fdg fgd",
+        "createdAt": "2018-08-06T02:31:51.908Z",
+        "updatedAt": "2018-08-06T02:31:51.908Z",
+        "id": 116
+      },
+      {
+        "restaurant_id": 1,
+        "name": "rte",
+        "rating": "4",
+        "comments": "rte fgdh",
+        "createdAt": "2018-08-06T04:35:09.226Z",
+        "updatedAt": "2018-08-06T04:35:09.226Z",
+        "id": 117
+      },
+      {
+        "restaurant_id": 1,
+        "name": "fds",
+        "rating": "5",
+        "comments": "tfgh fghdhgf",
+        "createdAt": "2018-08-06T04:35:52.501Z",
+        "updatedAt": "2018-08-06T04:35:52.501Z",
+        "id": 118
       }
     ]
   },
@@ -1299,7 +1326,7 @@
       "id": 10
     },
     "reviews": {
-      "id": 115
+      "id": 118
     }
   }
 }

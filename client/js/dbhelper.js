@@ -230,6 +230,7 @@ var DBHelper = function () {
         callback(error, null);
       }).then(function (response) {
         console.log('Success:', response);
+        DBHelper.placeRestaurantIntoIDB(response);
         callback(null, response);
       });
     }
