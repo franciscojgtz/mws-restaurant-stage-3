@@ -1,6 +1,7 @@
 let restaurant;
 let newMap;
 let reviews;
+let cacheRestaurant;
 
 /**
  * Initialize map as soon as the page is loaded.
@@ -31,7 +32,7 @@ const initMap = () => {
         id: 'mapbox.streets',
       }).addTo(newMap);
       requestAnimationFrame(() => { newMap.invalidateSize(); });
-      // setTimeout(() => { newMap.invalidateSize(); }, 400);
+      // setTimeout(() => { newMap.invalidateSize(); }, 200);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
@@ -52,19 +53,35 @@ const fetchRestaurantFromURL = (callback) => {
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
+      // check if we got restaurant from network and we already have restaurants from cache.
+      // THIS COULD ALSO BE CHECKED IN DBHELPER.JS
+      if (self.restaurant !== 'undefined' && restaurant.source === 'network') {
+        self.cacheRestaurant = self.restaurant;
+      }
+
       self.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
         return;
       }
+
+      // If we already got the reviews from the network, exit
+      if (self.reviews !== undefined) {
+        if (self.reviews[0].source === 'network') {
+          return;
+        }
+      }
+
       // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, (error, reviews) => {
+        self.reviews = reviews;
+
+        // if the restaurant has alredy been painted don't do it again.
         if (self.reviews !== undefined) {
-          if (self.reviews[0].source === 'network') {
+          if (self.reviews[0].source === 'cache') {
             return;
           }
         }
-        self.reviews = reviews;
         fillRestaurantHTML();
       });
       callback(null, restaurant);
@@ -78,7 +95,6 @@ const fetchRestaurantFromURL = (callback) => {
 const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
-  console.log(typeof restaurant.is_favorite);
   const favButton = document.getElementById('button-favorite');
   if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
     favButton.innerHTML = '★';

@@ -15,6 +15,7 @@ import webp from 'gulp-webp';
 import imageresize from 'gulp-image-resize';
 import rename from 'gulp-rename';
 import imagemin from 'gulp-imagemin';
+import gzip from 'gulp-gzip';
 
 const server = browserSync.create();
 
@@ -68,6 +69,7 @@ function scripts() {
       presets: ['es2015'],
     }))
     // .pipe(uglify())
+    // .pipe(gzip({ append: false }))
     .pipe(gulp.dest(paths.scripts.dest));
 }
 
@@ -150,4 +152,5 @@ export { optimizeImages };
 export { webPImages };
 export { jpgImages };
 export { cleanImages };
+export { scripts };
 export default dev;

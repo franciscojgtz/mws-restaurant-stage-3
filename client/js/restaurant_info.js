@@ -1,10 +1,9 @@
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var restaurant = void 0;
 var newMap = void 0;
 var reviews = void 0;
+var cacheRestaurant = void 0;
 
 /**
  * Initialize map as soon as the page is loaded.
@@ -36,7 +35,7 @@ var initMap = function initMap() {
       requestAnimationFrame(function () {
         newMap.invalidateSize();
       });
-      // setTimeout(() => { newMap.invalidateSize(); }, 400);
+      // setTimeout(() => { newMap.invalidateSize(); }, 200);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
@@ -59,19 +58,35 @@ var fetchRestaurantFromURL = function fetchRestaurantFromURL(callback) {
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, function (error, restaurant) {
+      // check if we got restaurant from network and we already have restaurants from cache.
+      // THIS COULD ALSO BE CHECKED IN DBHELPER.JS
+      if (self.restaurant !== 'undefined' && restaurant.source === 'network') {
+        self.cacheRestaurant = self.restaurant;
+      }
+
       self.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
         return;
       }
+
+      // If we already got the reviews from the network, exit
+      if (self.reviews !== undefined) {
+        if (self.reviews[0].source === 'network') {
+          return;
+        }
+      }
+
       // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, function (error, reviews) {
+        self.reviews = reviews;
+
+        // if the restaurant has alredy been painted don't do it again.
         if (self.reviews !== undefined) {
-          if (self.reviews[0].source === 'network') {
+          if (self.reviews[0].source === 'cache') {
             return;
           }
         }
-        self.reviews = reviews;
         fillRestaurantHTML();
       });
       callback(null, restaurant);
@@ -87,7 +102,6 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
 
   var name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
-  console.log(_typeof(restaurant.is_favorite));
   var favButton = document.getElementById('button-favorite');
   if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
     favButton.innerHTML = '★';
