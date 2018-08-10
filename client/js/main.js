@@ -8,6 +8,7 @@ var restaurants = void 0,
     neighborhoods = void 0,
     cuisines = void 0;
 var newMap = void 0;
+var allRestaurants = void 0;
 var markers = [];
 
 /**
@@ -15,8 +16,6 @@ var markers = [];
  */
 document.addEventListener('DOMContentLoaded', function (event) {
   initMap1(); // added
-  // fetchNeighborhoods();
-  // fetchCuisines();
 });
 
 var getNeighborhoods = function getNeighborhoods(restaurants) {
@@ -59,6 +58,23 @@ var fetchNeighborhoods = function fetchNeighborhoods() {
       fillNeighborhoodsHTML();
     }
   });
+};
+
+var getRestaurantByCuisineAndNeighborhood = function getRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
+  var results = self.allRestaurants;
+  if (cuisine !== 'all') {
+    // filter by cuisine
+    results = results.filter(function (r) {
+      return r.cuisine_type === cuisine;
+    });
+  }
+  if (neighborhood !== 'all') {
+    // filter by neighborhood
+    results = results.filter(function (r) {
+      return r.neighborhood === neighborhood;
+    });
+  }
+  callback(null, results);
 };
 
 /**
@@ -145,7 +161,23 @@ var initMap1 = function initMap1() {
     newMap.invalidateSize();
   });
   // setTimeout(() => { newMap.invalidateSize(); }, 400);
-  updateRestaurants();
+
+  // get all restaurants
+  DBHelper.fetchRestaurants(function (error, restaurants) {
+    if (error) {
+      console.log(error);
+    } else {
+      if (self.allRestaurants !== undefined) {
+        // We already got the restaurants either from cache or network
+        self.allRestaurants = restaurants;
+        return;
+      }
+      self.allRestaurants = restaurants;
+      self.restaurants = restaurants;
+
+      updateRestaurants();
+    }
+  });
 };
 
 /**
@@ -161,7 +193,7 @@ var updateRestaurants = function updateRestaurants() {
   var cuisine = cSelect[cIndex].value;
   var neighborhood = nSelect[nIndex].value;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, function (error, restaurants) {
+  getRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, function (error, restaurants) {
     if (error) {
       // Got an error!
       console.error(error);

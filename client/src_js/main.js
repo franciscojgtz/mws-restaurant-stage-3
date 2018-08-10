@@ -6,6 +6,7 @@ let restaurants,
   neighborhoods,
   cuisines;
 let newMap;
+let allRestaurants;
 const markers = [];
 
 /**
@@ -13,8 +14,6 @@ const markers = [];
  */
 document.addEventListener('DOMContentLoaded', (event) => {
   initMap1(); // added
-  // fetchNeighborhoods();
-  // fetchCuisines();
 });
 
 const getNeighborhoods = (restaurants) => {
@@ -48,6 +47,17 @@ const fetchNeighborhoods = () => {
       fillNeighborhoodsHTML();
     }
   });
+};
+
+const getRestaurantByCuisineAndNeighborhood = (cuisine, neighborhood, callback) => {
+  let results = self.allRestaurants;
+  if (cuisine !== 'all') { // filter by cuisine
+    results = results.filter(r => r.cuisine_type === cuisine);
+  }
+  if (neighborhood !== 'all') { // filter by neighborhood
+    results = results.filter(r => r.neighborhood === neighborhood);
+  }
+  callback(null, results);
 };
 
 /**
@@ -130,7 +140,23 @@ const initMap1 = () => {
   }).addTo(newMap);
   requestAnimationFrame(() => { newMap.invalidateSize(); });
   // setTimeout(() => { newMap.invalidateSize(); }, 400);
-  updateRestaurants();
+
+  // get all restaurants
+  DBHelper.fetchRestaurants((error, restaurants) => {
+    if (error) {
+      console.log(error);
+    } else {
+      if (self.allRestaurants !== undefined) {
+        // We already got the restaurants either from cache or network
+        self.allRestaurants = restaurants;
+        return;
+      }
+      self.allRestaurants = restaurants;
+      self.restaurants = restaurants;
+
+      updateRestaurants();
+    }
+  });
 };
 
 /**
@@ -146,7 +172,7 @@ const updateRestaurants = () => {
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
+  getRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
     if (error) { // Got an error!
       console.error(error);
     } else {
