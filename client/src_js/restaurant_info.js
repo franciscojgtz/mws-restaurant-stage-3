@@ -55,6 +55,7 @@ const fetchRestaurantFromURL = (callback) => {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
       // check if we got restaurant from network and we already have restaurants from cache.
       // THIS COULD ALSO BE CHECKED IN DBHELPER.JS
+      console.log(restaurant);
       if (self.restaurant !== 'undefined' && restaurant.source === 'network') {
         self.cacheRestaurant = self.restaurant;
       }
@@ -74,7 +75,8 @@ const fetchRestaurantFromURL = (callback) => {
 
       // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, (error, reviews) => {
-        self.reviews = reviews;
+        console.log(reviews);
+        
 
         // if the restaurant has alredy been painted don't do it again.
         if (self.reviews !== undefined) {
@@ -82,6 +84,7 @@ const fetchRestaurantFromURL = (callback) => {
             return;
           }
         }
+        self.reviews = reviews;
         fillRestaurantHTML();
       });
       callback(null, restaurant);

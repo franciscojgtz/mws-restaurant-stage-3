@@ -72,6 +72,7 @@ var DBHelper = function () {
     value: function fetchReviewsByRestaurantID(restaurantID, callback) {
       var _this2 = this;
 
+      console.log(restaurantID);
       if (this.getReviewsSource === 'network') {
         return;
       }

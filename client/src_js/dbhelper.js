@@ -64,6 +64,7 @@ class DBHelper {
    * Fetch reviews by restaurant ID
    */
   static fetchReviewsByRestaurantID(restaurantID, callback) {
+    console.log(restaurantID);
     if (this.getReviewsSource === 'network') {
       return;
     }
