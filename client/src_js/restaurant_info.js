@@ -31,8 +31,8 @@ const initMap = () => {
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         id: 'mapbox.streets',
       }).addTo(newMap);
-      requestAnimationFrame(() => { newMap.invalidateSize(); });
-      // setTimeout(() => { newMap.invalidateSize(); }, 200);
+      //requestAnimationFrame(() => { newMap.invalidateSize(); });
+      setTimeout(() => { newMap.invalidateSize(); }, 400);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }

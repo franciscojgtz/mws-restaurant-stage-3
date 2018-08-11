@@ -138,8 +138,8 @@ const initMap1 = () => {
       'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     id: 'mapbox.streets',
   }).addTo(newMap);
-  requestAnimationFrame(() => { newMap.invalidateSize(); });
-  // setTimeout(() => { newMap.invalidateSize(); }, 400);
+  // requestAnimationFrame(() => { newMap.invalidateSize(); });
+  setTimeout(() => { newMap.invalidateSize(); }, 400);
 
   // get all restaurants
   DBHelper.fetchRestaurants((error, restaurants) => {

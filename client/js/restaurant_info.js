@@ -32,10 +32,10 @@ var initMap = function initMap() {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' + '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         id: 'mapbox.streets'
       }).addTo(newMap);
-      requestAnimationFrame(function () {
+      //requestAnimationFrame(() => { newMap.invalidateSize(); });
+      setTimeout(function () {
         newMap.invalidateSize();
-      });
-      // setTimeout(() => { newMap.invalidateSize(); }, 200);
+      }, 400);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
