@@ -45,8 +45,8 @@
           "Sunday": "12:00 pm - 3:00 pm, 5:00 pm - 11:00 pm"
         },
         "createdAt": 1504095568414,
-        "updatedAt": "2017-09-14T14:05:54.800Z",
-        "is_favorite": false,
+        "updatedAt": "2018-08-01T22:15:48.008Z",
+        "is_favorite": "false",
         "id": 2
       },
       {
@@ -69,8 +69,9 @@
           "Sunday": "11:30 am - 2:00 am"
         },
         "createdAt": 1504095571434,
-        "updatedAt": 1504095571434,
-        "id": 3
+        "updatedAt": "2018-08-11T03:34:28.809Z",
+        "id": 3,
+        "is_favorite": "false"
       },
       {
         "name": "Katz's Delicatessen",
@@ -92,8 +93,8 @@
           "Sunday": "Sat - 10:30 pm"
         },
         "createdAt": 1504095567091,
-        "updatedAt": 1504095567091,
-        "is_favorite": false,
+        "updatedAt": "2018-08-11T03:34:34.910Z",
+        "is_favorite": "false",
         "id": 4
       },
       {
@@ -116,8 +117,8 @@
           "Sunday": "10:00 am - 12:00 am"
         },
         "createdAt": 1504095567071,
-        "updatedAt": 1504095567071,
-        "is_favorite": false,
+        "updatedAt": "2018-07-31T02:30:38.263Z",
+        "is_favorite": "false",
         "id": 5
       },
       {
@@ -140,8 +141,8 @@
           "Sunday": "12:00 pm - 9:00 pm"
         },
         "createdAt": 1504095567071,
-        "updatedAt": 1504095567071,
-        "is_favorite": false,
+        "updatedAt": "2018-07-31T03:34:38.773Z",
+        "is_favorite": "false",
         "id": 6
       },
       {
@@ -164,8 +165,8 @@
           "Sunday": "11:30 am - 10:00 pm"
         },
         "createdAt": 1504095567091,
-        "updatedAt": 1504095567091,
-        "is_favorite": false,
+        "updatedAt": "2018-08-03T00:59:15.609Z",
+        "is_favorite": "false",
         "id": 7
       },
       {
@@ -188,8 +189,8 @@
           "Sunday": "10:00 am - 3:00 pm, 5:30 pm - 11:00 pm"
         },
         "createdAt": 1504095567091,
-        "updatedAt": 1504095567091,
-        "is_favorite": false,
+        "updatedAt": "2018-08-03T03:24:28.702Z",
+        "is_favorite": "true",
         "id": 8
       },
       {
@@ -212,8 +213,8 @@
           "Sunday": "5:00 pm - 10:00 pm"
         },
         "createdAt": 1504095567191,
-        "updatedAt": 1504095567191,
-        "is_favorite": false,
+        "updatedAt": "2018-08-11T02:32:08.649Z",
+        "is_favorite": "false",
         "id": 9
       },
       {
@@ -235,21 +236,12 @@
           "Sunday": "11:00 am - 12:00 am"
         },
         "createdAt": 1504095567183,
-        "updatedAt": 1504095567183,
-        "is_favorite": false,
+        "updatedAt": "2018-08-11T03:34:41.213Z",
+        "is_favorite": "false",
         "id": 10
       }
     ],
     "reviews": [
-      {
-        "id": 1,
-        "restaurant_id": 1,
-        "name": "Steve",
-        "createdAt": 1504095567183,
-        "updatedAt": 1504095567183,
-        "rating": 4,
-        "comments": "Mission Chinese Food has grown up from its scrappy Orchard Street days into a big, two story restaurant equipped with a pizza oven, a prime rib cart, and a much broader menu. Yes, it still has all the hits â€” the kung pao pastrami, the thrice cooked bacon â€”but chef/proprietor Danny Bowien and executive chef Angela Dimayuga have also added a raw bar, two generous family-style set menus, and showstoppers like duck baked in clay. And you can still get a lot of food without breaking the bank."
-      },
       {
         "id": 2,
         "restaurant_id": 1,
@@ -501,15 +493,6 @@
         "updatedAt": 1504095567183,
         "rating": 5,
         "comments": "The hype was real. Please go. Get the ceviche. And the tres leches. You're welcome"
-      },
-      {
-        "id": 30,
-        "restaurant_id": 10,
-        "name": "Jason",
-        "createdAt": 1504095567183,
-        "updatedAt": 1504095567183,
-        "rating": 4,
-        "comments": "For a Michelin star restaurant, it's fairly priced and the food is fairly good. Started with a strawberry margarita which was good in flavor but not much alcohol. Had the chicken enchiladas with salsa verde and it was really good. Great balance in flavor and a good portion. Extra tasty with their hot sauces. My wife had the lamb but it was a bit too salty for our taste. Although, it was cooked very well and fell off the bone. The highlight of the night was the tres leches cake. Probably the best I've ever had to be honest. Not too sweet and very milky. Overall, one of my top 3 favorite Mexican in NY."
       }
     ]
   },
@@ -565,7 +548,7 @@
       "id": 10
     },
     "reviews": {
-      "id": 30
+      "id": 127
     }
   }
 }

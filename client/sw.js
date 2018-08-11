@@ -41,8 +41,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  event.respondWith(caches.match(event.request)
-    .then(cachedResponse => cachedResponse || fetch(event.request)));
+  event.respondWith(caches.match(event.request, { ignoreSearch: true })
+    .then(cachedResponse => cachedResponse || fetch(event.request))
+    .catch((err) => {
+      console.log(err);
+    }));
 });
 
 function servePhoto(request) {

@@ -1,6 +1,7 @@
 let restaurant;
 let newMap;
 let reviews;
+let cacheRestaurant;
 
 /**
  * Initialize map as soon as the page is loaded.
@@ -30,8 +31,8 @@ const initMap = () => {
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         id: 'mapbox.streets',
       }).addTo(newMap);
-      requestAnimationFrame(() => { newMap.invalidateSize(); });
-      //setTimeout(() => { newMap.invalidateSize(); }, 400);
+      //requestAnimationFrame(() => { newMap.invalidateSize(); });
+      setTimeout(() => { newMap.invalidateSize(); }, 400);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
@@ -48,17 +49,41 @@ const fetchRestaurantFromURL = (callback) => {
   }
   const id = getParameterByName('id');
   if (!id) { // no id found in URL
-    error = 'No restaurant id in URL';
+    const error = 'No restaurant id in URL';
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
+      // check if we got restaurant from network and we already have restaurants from cache.
+      // THIS COULD ALSO BE CHECKED IN DBHELPER.JS
+      console.log(restaurant);
+      if (self.restaurant !== 'undefined' && restaurant.source === 'network') {
+        self.cacheRestaurant = self.restaurant;
+      }
+
       self.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
         return;
       }
-      //fetch the reviews from the network
+
+      // If we already got the reviews from the network, exit
+      if (self.reviews !== undefined) {
+        if (self.reviews[0].source === 'network') {
+          return;
+        }
+      }
+
+      // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, (error, reviews) => {
+        console.log(reviews);
+        
+
+        // if the restaurant has alredy been painted don't do it again.
+        if (self.reviews !== undefined) {
+          if (self.reviews[0].source === 'cache') {
+            return;
+          }
+        }
         self.reviews = reviews;
         fillRestaurantHTML();
       });
@@ -73,6 +98,16 @@ const fetchRestaurantFromURL = (callback) => {
 const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
+  const favButton = document.getElementById('button-favorite');
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
+    favButton.innerHTML = '★';
+    favButton.classList.add('button-favorite--favorite');
+  } else {
+    favButton.innerHTML = '☆';
+    favButton.classList.add('button-favorite--not-favorite');
+  }
+
+  // favButton.innerHTML = restaurant.is_favorite === 'true' || restaurant.is_favorite === true ? '★' : '☆';
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -97,6 +132,8 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
  */
 const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
+  /* TO DO: This could be a paint issue */
+  hours.innerHTML = '';
   for (const key in operatingHours) {
     const row = document.createElement('tr');
 
@@ -116,19 +153,59 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
  * Fetch Reviews by restaurant id from network
  */
 const fetchReviewsByRestaurantID = (restaurantID, callback) => {
-  DBHelper.fetchReviewsByID(restaurantID, (error, reviews) => {
+  DBHelper.fetchReviewsByRestaurantID(restaurantID, (error, reviews) => {
     callback(null, reviews);
   });
 };
+
+/**
+ * Handle review form
+ */
+document.getElementById('reviews-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const reviewsForm = document.getElementById('reviews-form');
+  const name = reviewsForm.elements.name.value.trim();
+  const rating = reviewsForm.elements.rating.value;
+  const comments = reviewsForm.elements['reviews-form__comments-textarea'].value;
+
+  const review = {
+    restaurant_id: restaurant.id,
+    name,
+    rating,
+    comments,
+  };
+
+  DBHelper.postReview(review, (error, reviewResponse) => {
+    // what do i want to happen after review is in database
+
+    document.getElementById('reviews-form').reset();
+
+    // add review with others
+    const container = document.getElementById('reviews-container');
+    const ul = document.getElementById('reviews-list');
+    ul.appendChild(createReviewHTML(reviewResponse));
+    container.appendChild(ul);
+    document.getElementById('reviews-form-container').innerHTML = '<h3 class="review-form-container__message--sucess">Thank you for adding a review!</h3>';
+  });
+}, false);
+
+const deleteReview = (id) => {
+  DBHelper.deleteReview(id);
+};
+
+const updateReview = (id, review) => {
+  DBHelper.updateReview(id, review);
+};
+
+window.addEventListener('offline', (e) => { console.log('offline'); });
+
+window.addEventListener('online', (e) => { console.log('online'); });
 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
 const fillReviewsHTML = (reviews = self.reviews) => {
   const container = document.getElementById('reviews-container');
-  const title = document.createElement('h3');
-  title.innerHTML = 'Reviews';
-  container.appendChild(title);
 
   if (!reviews) {
     const noReviews = document.createElement('p');
@@ -137,6 +214,8 @@ const fillReviewsHTML = (reviews = self.reviews) => {
     return;
   }
   const ul = document.getElementById('reviews-list');
+  // TO DO: this could result in a paint issue
+  ul.innerHTML = '';
   reviews.forEach((review) => {
     ul.appendChild(createReviewHTML(review));
   });
@@ -153,7 +232,9 @@ const createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  const updatedAt = review.updatedAt;
+  const updatedDate = timeConverter(updatedAt);
+  date.innerHTML = updatedDate;
   li.appendChild(date);
 
   const rating = document.createElement('p');
@@ -165,6 +246,22 @@ const createReviewHTML = (review) => {
   li.appendChild(comments);
 
   return li;
+};
+
+
+/**
+ * convert 13 digit timestamp into month day, year
+ * @param {13 digittimestamp} timeStamp
+ * @returns {month day, year}
+ */
+const timeConverter = (timeStamp) => {
+  const a = new Date(timeStamp);
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'Septemeber', 'October', 'November', 'December'];
+  const year = a.getFullYear();
+  const month = months[a.getMonth()];
+  const date = a.getDate();
+
+  return `${month} ${date}, ${year}`;
 };
 
 /**
@@ -181,15 +278,12 @@ const fillBreadcrumb = (restaurant = self.restaurant) => {
  * Get a parameter by name from page URL.
  */
 const getParameterByName = (name, url) => {
-  if (!url)
-  {url = window.location.href;}
+  if (!url) { url = window.location.href; }
   name = name.replace(/[\[\]]/g, '\\$&');
   const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
     results = regex.exec(url);
-  if (!results)
-  {return null;}
-  if (!results[2])
-  {return '';}
+  if (!results) { return null; }
+  if (!results[2]) { return ''; }
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 };
 
@@ -236,3 +330,31 @@ function createResponsiveImage(restaurant) {
   image.srcset = `${restImg}_300.webp 300w, ${restImg}_350.webp 350w, ${restImg}_400.webp 400w, ${restImg}_450.webp 450w, ${restImg}_500.webp 500w, ${restImg}_550.webp 550w, ${restImg}_600.webp 600w, ${restImg}_700.webp 700w, ${restImg}_800.webp 800w`;
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
+
+/**
+ * listen for click events on button-favorite
+ */
+document.getElementById('button-favorite').addEventListener('click', () => {
+  const restaurant = self.restaurant;
+  console.log(restaurant);
+  let state = false;
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
+    console.log(restaurant.is_favorite);
+    state = true;
+  }
+
+  DBHelper.updateIsFavortie(restaurant.id, !state, (error, responseRestaurant) => {
+    // reset link
+    self.restaurant = responseRestaurant;
+    const favButton = document.getElementById('button-favorite');
+    if (responseRestaurant.is_favorite === 'true' || responseRestaurant.is_favorite === true) {
+      favButton.innerHTML = `★`;
+      favButton.classList.add('button-favorite--favorite');
+      favButton.classList.remove('button-favorite--not-favorite');
+    } else {
+      favButton.innerHTML = `☆`;
+      favButton.classList.add('button-favorite--not-favorite');
+      favButton.classList.remove('button-favorite--favorite');
+    }
+  });
+});

@@ -6,6 +6,7 @@ let restaurants,
   neighborhoods,
   cuisines;
 let newMap;
+let allRestaurants;
 const markers = [];
 
 /**
@@ -13,9 +14,25 @@ const markers = [];
  */
 document.addEventListener('DOMContentLoaded', (event) => {
   initMap1(); // added
-  fetchNeighborhoods();
-  fetchCuisines();
 });
+
+const getNeighborhoods = (restaurants) => {
+  // Get all neighborhoods from all restaurants
+  const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
+  // Remove duplicates from neighborhoods
+  const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) === i);
+  self.neighborhoods = uniqueNeighborhoods;
+  fillNeighborhoodsHTML();
+};
+
+const getCuisnes = (restaurants) => {
+  // Get all cuisines from all restaurants
+  const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
+  // Remove duplicates from cuisines
+  const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) === i);
+  self.cuisines = uniqueCuisines;
+  fillCuisinesHTML();
+};
 
 /**
  * Fetch all neighborhoods and set their HTML.
@@ -32,11 +49,31 @@ const fetchNeighborhoods = () => {
   });
 };
 
+const getRestaurantByCuisineAndNeighborhood = (cuisine, neighborhood, callback) => {
+  let results = self.allRestaurants;
+  if (cuisine !== 'all') { // filter by cuisine
+    results = results.filter(r => r.cuisine_type === cuisine);
+  }
+  if (neighborhood !== 'all') { // filter by neighborhood
+    results = results.filter(r => r.neighborhood === neighborhood);
+  }
+  callback(null, results);
+};
+
 /**
  * Set neighborhoods HTML.
  */
 const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
   const select = document.getElementById('neighborhoods-select');
+
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
+  const optionAll = document.createElement('option');
+  optionAll.innerHTML = 'All Neighborhoods';
+  optionAll.value = 'all';
+  select.append(optionAll);
+
+
   neighborhoods.forEach((neighborhood) => {
     const option = document.createElement('option');
     option.innerHTML = neighborhood;
@@ -66,6 +103,16 @@ const fetchCuisines = () => {
 const fillCuisinesHTML = (cuisines = self.cuisines) => {
   const select = document.getElementById('cuisines-select');
 
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
+
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
+  const optionAll = document.createElement('option');
+  optionAll.innerHTML = 'All Cuisines';
+  optionAll.value = 'all';
+  select.append(optionAll);
+
   cuisines.forEach((cuisine) => {
     const option = document.createElement('option');
     option.innerHTML = cuisine;
@@ -91,9 +138,25 @@ const initMap1 = () => {
       'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     id: 'mapbox.streets',
   }).addTo(newMap);
-  requestAnimationFrame(() => { newMap.invalidateSize(); });
-  // setTimeout(() => { newMap.invalidateSize(); }, 400);
-  updateRestaurants();
+  // requestAnimationFrame(() => { newMap.invalidateSize(); });
+  setTimeout(() => { newMap.invalidateSize(); }, 400);
+
+  // get all restaurants
+  DBHelper.fetchRestaurants((error, restaurants) => {
+    if (error) {
+      console.log(error);
+    } else {
+      if (self.allRestaurants !== undefined) {
+        // We already got the restaurants either from cache or network
+        self.allRestaurants = restaurants;
+        return;
+      }
+      self.allRestaurants = restaurants;
+      self.restaurants = restaurants;
+
+      updateRestaurants();
+    }
+  });
 };
 
 /**
@@ -109,10 +172,14 @@ const updateRestaurants = () => {
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
+  getRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
     if (error) { // Got an error!
       console.error(error);
     } else {
+      if (cuisine === 'all' && neighborhood === 'all') {
+        getNeighborhoods(restaurants);
+        getCuisnes(restaurants);
+      }
       resetRestaurants(restaurants);
       fillRestaurantsHTML();
     }
@@ -152,6 +219,13 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
  */
 const createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
+
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
+    const favorite = document.createElement('p');
+    favorite.classList.add('favorite-icon');
+    favorite.innerHTML = '★';
+    li.append(favorite);
+  }
 
   if (restaurant.photograph) {
     const pictureElement = createResponsiveImage(restaurant);
@@ -253,68 +327,3 @@ function createResponsiveImage(restaurant) {
 
   return pictureElement;
 }
-
-function notifySWUpdates(reg) {
-  console.log('There is a new Service Worker available');
-  // create button
-  const buttonSW = document.createElement('button');
-  buttonSW.classList.add('sw-button');
-  buttonSW.innerHTML = 'Update Available';
-  // append button
-  const docBody = document.getElementsByTagName('body')[0];
-  docBody.appendChild(buttonSW);
-  // onclick, post message
-  buttonSW.addEventListener('click', () => {
-    reg.postMessage({ activate: 'true' });
-  });
-}
-
-function trackSWStates(reg) {
-  reg.addEventListener('statechange', () => {
-    if (this.state == 'installed') {
-      notifySWUpdates(reg);
-    }
-  });
-}
-
-/**
- * This function registers the service worker
-*/
-function registerServiceWorker() {
-  navigator.serviceWorker.register('sw.js').then((reg) => {
-    // refers to the SW that controls this page
-    if (!navigator.serviceWorker.controller) {
-      // page didn't load using a SW
-      // loaded from the network
-      return;
-    }
-
-    if (reg.waiting) {
-      // there's an update ready!
-      notifySWUpdates(reg.waiting);
-    }
-
-    if (reg.installing) {
-      // there's an update in progress
-      trackSWStates(reg.installing);
-    }
-
-    reg.addEventListener('updatefound', () => {
-      trackSWStates(reg.installing);
-    });
-
-    let reloading;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloading) return;
-      window.location.reload();
-      reloading = true;
-    });
-  }).catch((err) => {
-    console.log('SW failed: ', err);
-  });
-}
-
-/**
- * Add service worker.
- */
-registerServiceWorker();

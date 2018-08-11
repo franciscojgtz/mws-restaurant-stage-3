@@ -3,6 +3,7 @@
 var restaurant = void 0;
 var newMap = void 0;
 var reviews = void 0;
+var cacheRestaurant = void 0;
 
 /**
  * Initialize map as soon as the page is loaded.
@@ -31,10 +32,10 @@ var initMap = function initMap() {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' + '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         id: 'mapbox.streets'
       }).addTo(newMap);
-      requestAnimationFrame(function () {
+      //requestAnimationFrame(() => { newMap.invalidateSize(); });
+      setTimeout(function () {
         newMap.invalidateSize();
-      });
-      //setTimeout(() => { newMap.invalidateSize(); }, 400);
+      }, 400);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
@@ -53,17 +54,40 @@ var fetchRestaurantFromURL = function fetchRestaurantFromURL(callback) {
   var id = getParameterByName('id');
   if (!id) {
     // no id found in URL
-    error = 'No restaurant id in URL';
+    var error = 'No restaurant id in URL';
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, function (error, restaurant) {
+      // check if we got restaurant from network and we already have restaurants from cache.
+      // THIS COULD ALSO BE CHECKED IN DBHELPER.JS
+      console.log(restaurant);
+      if (self.restaurant !== 'undefined' && restaurant.source === 'network') {
+        self.cacheRestaurant = self.restaurant;
+      }
+
       self.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
         return;
       }
-      //fetch the reviews from the network
+
+      // If we already got the reviews from the network, exit
+      if (self.reviews !== undefined) {
+        if (self.reviews[0].source === 'network') {
+          return;
+        }
+      }
+
+      // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, function (error, reviews) {
+        console.log(reviews);
+
+        // if the restaurant has alredy been painted don't do it again.
+        if (self.reviews !== undefined) {
+          if (self.reviews[0].source === 'cache') {
+            return;
+          }
+        }
         self.reviews = reviews;
         fillRestaurantHTML();
       });
@@ -80,6 +104,16 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
 
   var name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
+  var favButton = document.getElementById('button-favorite');
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
+    favButton.innerHTML = '★';
+    favButton.classList.add('button-favorite--favorite');
+  } else {
+    favButton.innerHTML = '☆';
+    favButton.classList.add('button-favorite--not-favorite');
+  }
+
+  // favButton.innerHTML = restaurant.is_favorite === 'true' || restaurant.is_favorite === true ? '★' : '☆';
 
   var address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -106,6 +140,8 @@ var fillRestaurantHoursHTML = function fillRestaurantHoursHTML() {
   var operatingHours = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.restaurant.operating_hours;
 
   var hours = document.getElementById('restaurant-hours');
+  /* TO DO: This could be a paint issue */
+  hours.innerHTML = '';
   for (var key in operatingHours) {
     var row = document.createElement('tr');
 
@@ -125,10 +161,57 @@ var fillRestaurantHoursHTML = function fillRestaurantHoursHTML() {
  * Fetch Reviews by restaurant id from network
  */
 var fetchReviewsByRestaurantID = function fetchReviewsByRestaurantID(restaurantID, callback) {
-  DBHelper.fetchReviewsByID(restaurantID, function (error, reviews) {
+  DBHelper.fetchReviewsByRestaurantID(restaurantID, function (error, reviews) {
     callback(null, reviews);
   });
 };
+
+/**
+ * Handle review form
+ */
+document.getElementById('reviews-form').addEventListener('submit', function (event) {
+  event.preventDefault();
+  var reviewsForm = document.getElementById('reviews-form');
+  var name = reviewsForm.elements.name.value.trim();
+  var rating = reviewsForm.elements.rating.value;
+  var comments = reviewsForm.elements['reviews-form__comments-textarea'].value;
+
+  var review = {
+    restaurant_id: restaurant.id,
+    name: name,
+    rating: rating,
+    comments: comments
+  };
+
+  DBHelper.postReview(review, function (error, reviewResponse) {
+    // what do i want to happen after review is in database
+
+    document.getElementById('reviews-form').reset();
+
+    // add review with others
+    var container = document.getElementById('reviews-container');
+    var ul = document.getElementById('reviews-list');
+    ul.appendChild(createReviewHTML(reviewResponse));
+    container.appendChild(ul);
+    document.getElementById('reviews-form-container').innerHTML = '<h3 class="review-form-container__message--sucess">Thank you for adding a review!</h3>';
+  });
+}, false);
+
+var deleteReview = function deleteReview(id) {
+  DBHelper.deleteReview(id);
+};
+
+var updateReview = function updateReview(id, review) {
+  DBHelper.updateReview(id, review);
+};
+
+window.addEventListener('offline', function (e) {
+  console.log('offline');
+});
+
+window.addEventListener('online', function (e) {
+  console.log('online');
+});
 
 /**
  * Create all reviews HTML and add them to the webpage.
@@ -137,9 +220,6 @@ var fillReviewsHTML = function fillReviewsHTML() {
   var reviews = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.reviews;
 
   var container = document.getElementById('reviews-container');
-  var title = document.createElement('h3');
-  title.innerHTML = 'Reviews';
-  container.appendChild(title);
 
   if (!reviews) {
     var noReviews = document.createElement('p');
@@ -148,6 +228,8 @@ var fillReviewsHTML = function fillReviewsHTML() {
     return;
   }
   var ul = document.getElementById('reviews-list');
+  // TO DO: this could result in a paint issue
+  ul.innerHTML = '';
   reviews.forEach(function (review) {
     ul.appendChild(createReviewHTML(review));
   });
@@ -164,7 +246,9 @@ var createReviewHTML = function createReviewHTML(review) {
   li.appendChild(name);
 
   var date = document.createElement('p');
-  date.innerHTML = review.date;
+  var updatedAt = review.updatedAt;
+  var updatedDate = timeConverter(updatedAt);
+  date.innerHTML = updatedDate;
   li.appendChild(date);
 
   var rating = document.createElement('p');
@@ -176,6 +260,21 @@ var createReviewHTML = function createReviewHTML(review) {
   li.appendChild(comments);
 
   return li;
+};
+
+/**
+ * convert 13 digit timestamp into month day, year
+ * @param {13 digittimestamp} timeStamp
+ * @returns {month day, year}
+ */
+var timeConverter = function timeConverter(timeStamp) {
+  var a = new Date(timeStamp);
+  var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'Septemeber', 'October', 'November', 'December'];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate();
+
+  return month + ' ' + date + ', ' + year;
 };
 
 /**
@@ -252,3 +351,31 @@ function createResponsiveImage(restaurant) {
   image.srcset = restImg + '_300.webp 300w, ' + restImg + '_350.webp 350w, ' + restImg + '_400.webp 400w, ' + restImg + '_450.webp 450w, ' + restImg + '_500.webp 500w, ' + restImg + '_550.webp 550w, ' + restImg + '_600.webp 600w, ' + restImg + '_700.webp 700w, ' + restImg + '_800.webp 800w';
   image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
 }
+
+/**
+ * listen for click events on button-favorite
+ */
+document.getElementById('button-favorite').addEventListener('click', function () {
+  var restaurant = self.restaurant;
+  console.log(restaurant);
+  var state = false;
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
+    console.log(restaurant.is_favorite);
+    state = true;
+  }
+
+  DBHelper.updateIsFavortie(restaurant.id, !state, function (error, responseRestaurant) {
+    // reset link
+    self.restaurant = responseRestaurant;
+    var favButton = document.getElementById('button-favorite');
+    if (responseRestaurant.is_favorite === 'true' || responseRestaurant.is_favorite === true) {
+      favButton.innerHTML = '\u2605';
+      favButton.classList.add('button-favorite--favorite');
+      favButton.classList.remove('button-favorite--not-favorite');
+    } else {
+      favButton.innerHTML = '\u2606';
+      favButton.classList.add('button-favorite--not-favorite');
+      favButton.classList.remove('button-favorite--favorite');
+    }
+  });
+});

@@ -8,6 +8,7 @@ var restaurants = void 0,
     neighborhoods = void 0,
     cuisines = void 0;
 var newMap = void 0;
+var allRestaurants = void 0;
 var markers = [];
 
 /**
@@ -15,9 +16,33 @@ var markers = [];
  */
 document.addEventListener('DOMContentLoaded', function (event) {
   initMap1(); // added
-  fetchNeighborhoods();
-  fetchCuisines();
 });
+
+var getNeighborhoods = function getNeighborhoods(restaurants) {
+  // Get all neighborhoods from all restaurants
+  var neighborhoods = restaurants.map(function (v, i) {
+    return restaurants[i].neighborhood;
+  });
+  // Remove duplicates from neighborhoods
+  var uniqueNeighborhoods = neighborhoods.filter(function (v, i) {
+    return neighborhoods.indexOf(v) === i;
+  });
+  self.neighborhoods = uniqueNeighborhoods;
+  fillNeighborhoodsHTML();
+};
+
+var getCuisnes = function getCuisnes(restaurants) {
+  // Get all cuisines from all restaurants
+  var cuisines = restaurants.map(function (v, i) {
+    return restaurants[i].cuisine_type;
+  });
+  // Remove duplicates from cuisines
+  var uniqueCuisines = cuisines.filter(function (v, i) {
+    return cuisines.indexOf(v) === i;
+  });
+  self.cuisines = uniqueCuisines;
+  fillCuisinesHTML();
+};
 
 /**
  * Fetch all neighborhoods and set their HTML.
@@ -35,6 +60,23 @@ var fetchNeighborhoods = function fetchNeighborhoods() {
   });
 };
 
+var getRestaurantByCuisineAndNeighborhood = function getRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
+  var results = self.allRestaurants;
+  if (cuisine !== 'all') {
+    // filter by cuisine
+    results = results.filter(function (r) {
+      return r.cuisine_type === cuisine;
+    });
+  }
+  if (neighborhood !== 'all') {
+    // filter by neighborhood
+    results = results.filter(function (r) {
+      return r.neighborhood === neighborhood;
+    });
+  }
+  callback(null, results);
+};
+
 /**
  * Set neighborhoods HTML.
  */
@@ -42,6 +84,14 @@ var fillNeighborhoodsHTML = function fillNeighborhoodsHTML() {
   var neighborhoods = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.neighborhoods;
 
   var select = document.getElementById('neighborhoods-select');
+
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
+  var optionAll = document.createElement('option');
+  optionAll.innerHTML = 'All Neighborhoods';
+  optionAll.value = 'all';
+  select.append(optionAll);
+
   neighborhoods.forEach(function (neighborhood) {
     var option = document.createElement('option');
     option.innerHTML = neighborhood;
@@ -74,6 +124,16 @@ var fillCuisinesHTML = function fillCuisinesHTML() {
 
   var select = document.getElementById('cuisines-select');
 
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
+
+  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  select.innerHTML = '';
+  var optionAll = document.createElement('option');
+  optionAll.innerHTML = 'All Cuisines';
+  optionAll.value = 'all';
+  select.append(optionAll);
+
   cuisines.forEach(function (cuisine) {
     var option = document.createElement('option');
     option.innerHTML = cuisine;
@@ -97,11 +157,27 @@ var initMap1 = function initMap1() {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' + '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     id: 'mapbox.streets'
   }).addTo(newMap);
-  requestAnimationFrame(function () {
+  // requestAnimationFrame(() => { newMap.invalidateSize(); });
+  setTimeout(function () {
     newMap.invalidateSize();
+  }, 400);
+
+  // get all restaurants
+  DBHelper.fetchRestaurants(function (error, restaurants) {
+    if (error) {
+      console.log(error);
+    } else {
+      if (self.allRestaurants !== undefined) {
+        // We already got the restaurants either from cache or network
+        self.allRestaurants = restaurants;
+        return;
+      }
+      self.allRestaurants = restaurants;
+      self.restaurants = restaurants;
+
+      updateRestaurants();
+    }
   });
-  // setTimeout(() => { newMap.invalidateSize(); }, 400);
-  updateRestaurants();
 };
 
 /**
@@ -117,11 +193,15 @@ var updateRestaurants = function updateRestaurants() {
   var cuisine = cSelect[cIndex].value;
   var neighborhood = nSelect[nIndex].value;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, function (error, restaurants) {
+  getRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, function (error, restaurants) {
     if (error) {
       // Got an error!
       console.error(error);
     } else {
+      if (cuisine === 'all' && neighborhood === 'all') {
+        getNeighborhoods(restaurants);
+        getCuisnes(restaurants);
+      }
       resetRestaurants(restaurants);
       fillRestaurantsHTML();
     }
@@ -165,6 +245,13 @@ var fillRestaurantsHTML = function fillRestaurantsHTML() {
  */
 var createRestaurantHTML = function createRestaurantHTML(restaurant) {
   var li = document.createElement('li');
+
+  if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
+    var favorite = document.createElement('p');
+    favorite.classList.add('favorite-icon');
+    favorite.innerHTML = '★';
+    li.append(favorite);
+  }
 
   if (restaurant.photograph) {
     var pictureElement = createResponsiveImage(restaurant);
@@ -268,70 +355,3 @@ function createResponsiveImage(restaurant) {
 
   return pictureElement;
 }
-
-function notifySWUpdates(reg) {
-  console.log('There is a new Service Worker available');
-  // create button
-  var buttonSW = document.createElement('button');
-  buttonSW.classList.add('sw-button');
-  buttonSW.innerHTML = 'Update Available';
-  // append button
-  var docBody = document.getElementsByTagName('body')[0];
-  docBody.appendChild(buttonSW);
-  // onclick, post message
-  buttonSW.addEventListener('click', function () {
-    reg.postMessage({ activate: 'true' });
-  });
-}
-
-function trackSWStates(reg) {
-  var _this = this;
-
-  reg.addEventListener('statechange', function () {
-    if (_this.state == 'installed') {
-      notifySWUpdates(reg);
-    }
-  });
-}
-
-/**
- * This function registers the service worker
-*/
-function registerServiceWorker() {
-  navigator.serviceWorker.register('sw.js').then(function (reg) {
-    // refers to the SW that controls this page
-    if (!navigator.serviceWorker.controller) {
-      // page didn't load using a SW
-      // loaded from the network
-      return;
-    }
-
-    if (reg.waiting) {
-      // there's an update ready!
-      notifySWUpdates(reg.waiting);
-    }
-
-    if (reg.installing) {
-      // there's an update in progress
-      trackSWStates(reg.installing);
-    }
-
-    reg.addEventListener('updatefound', function () {
-      trackSWStates(reg.installing);
-    });
-
-    var reloading = void 0;
-    navigator.serviceWorker.addEventListener('controllerchange', function () {
-      if (reloading) return;
-      window.location.reload();
-      reloading = true;
-    });
-  }).catch(function (err) {
-    console.log('SW failed: ', err);
-  });
-}
-
-/**
- * Add service worker.
- */
-registerServiceWorker();

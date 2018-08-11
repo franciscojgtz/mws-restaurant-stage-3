@@ -1,9 +1,18 @@
 // import idb from 'idb';
 // const idb = require('idb');
+
+let reviewsSource = null;
 /**
  * Common database helper functions.
  */
 class DBHelper {
+  static get getReviewsSource() {
+    return reviewsSource;
+  }
+
+  static set setReviewsSource(source) {
+    reviewsSource = source;
+  }
   /**
    * Database URL.
    * Change this to restaurants.json file location on your server.
@@ -20,16 +29,15 @@ class DBHelper {
     this.showCachedRestaurants().then((cachedRestaurants) => {
       if (cachedRestaurants === undefined || cachedRestaurants.length === 0) {
         // array empty or does not exist
-        fetch(DBHelper.DATABASE_URL)
-          .then(response => response.json())
-          .then((fetchedRestaurants) => {
-            DBHelper.placeRestaurantsIntoIDB(fetchedRestaurants);
-            console.log('restaurants from fetch');
-            callback(null, fetchedRestaurants);
-          });
+        this.getRestaurantsFromNetwork(callback);
       } else {
+        cachedRestaurants.map((restaurant) => {
+          restaurant.source = 'cache';
+          return restaurant;
+        });
         console.log('restaurants from cache');
         callback(null, cachedRestaurants);
+        this.getRestaurantsFromNetwork(callback);
       }
     })
       .catch((err) => {
@@ -38,15 +46,168 @@ class DBHelper {
       });
   }
 
+  static getRestaurantsFromNetwork(callback) {
+    fetch(DBHelper.DATABASE_URL)
+      .then(response => response.json())
+      .then((fetchedRestaurants) => {
+        DBHelper.placeRestaurantsIntoIDB(fetchedRestaurants);
+        fetchedRestaurants.map((restaurant) => {
+          restaurant.source = 'network';
+          return restaurant;
+        });
+        console.log('restaurants from network');
+        callback(null, fetchedRestaurants);
+      });
+  }
+
   /**
    * Fetch reviews by restaurant ID
    */
-  static fetchReviewsByID(restaurantID, callback) {
+  static fetchReviewsByRestaurantID(restaurantID, callback) {
+    console.log(restaurantID);
+    if (this.getReviewsSource === 'network') {
+      return;
+    }
+
+    // Get Reviews from network
+    this.getReviewsFromNetwork(restaurantID, callback);
+
+    if (this.getReviewsSource === 'cache') {
+      return;
+    }
+
+    this.showCachedReviewsByRestaurantID(restaurantID).then((cachedReviews) => {
+      this.getDeferedReviews().then((deferedReviews) => {
+        deferedReviews.forEach((deferedReview) => {
+          if (restaurantID === deferedReview.restaurant_id) {
+            cachedReviews.push(deferedReview);
+          }
+        });
+        if (cachedReviews === undefined || cachedReviews.length === 0) {
+          // array empty or does not exist
+          // this.getReviewsFromNetwork(restaurantID, callback);
+        } else {
+          console.log('reviews from cache');
+          cachedReviews.map((review) => {
+            review.source = 'cache';
+            return review;
+          });
+          if (cachedReviews.length > 0) {
+            this.setReviewsSource = 'cache';
+          }
+          callback(null, cachedReviews);
+        }
+      });
+    });
+  }
+
+  static getReviewsFromNetwork(restaurantID, callback) {
+    this.getDeferedReviews().then((deferedReviews) => {
+      deferedReviews.forEach((deferedReview) => {
+        this.postReview(deferedReview, (error, reviewResponse) => {
+          // delete review from defered-reviews store
+          console.log(reviewResponse.restaurant_id);
+          if (error) {
+            console.log(error);
+          } else {
+            this.deleteDeferedReviewByRestaurantID(reviewResponse.restaurant_id);
+          }
+        });
+      });
+    });
+
     fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantID}`)
       .then(response => response.json())
-      .then((fetchedReview) => {
-        console.log('reviews from fetch');
-        callback(null, fetchedReview);
+      .then((fetchedReviews) => {
+        DBHelper.placeReviewsIntoIDB(fetchedReviews);
+        console.log('reviews from network');
+        if (fetchedReviews.length > 0) {
+          this.setReviewsSource = 'network';
+        }
+        fetchedReviews.map((review) => {
+          review.source = 'network';
+          return review;
+        });
+        callback(null, fetchedReviews);
+      });
+  }
+
+  /**
+   * post review
+   * @param {review object} review
+   */
+  static postReview(review, callback) {
+    fetch('http://localhost:1337/reviews/', {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(review),
+    })
+      .then(res => res.json())
+      .then((response) => {
+        console.log('Success:', response);
+        // TO DO add review to indexDB
+        callback(null, response);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        // To do defer review
+        const timeStamp = Date.now();
+        review.createdAt = timeStamp;
+        review.updatedAt = timeStamp;
+        this.placedeferedReviewsIntoIDB(review);
+        callback(error, review);
+      });
+  }
+
+  /**
+   * Delete review
+   * @param {Review ID} id
+   */
+  static deleteReview(id) {
+    fetch(`http://localhost:1337/reviews/${id}`, {
+      method: 'delete',
+    })
+      .then((res) => { console.log(res); });
+  }
+
+  /**
+   * Update review
+   * @param {Review ID} id
+   * @param {Review object} review
+   */
+  static updateReview(id, review) {
+    fetch(`http://localhost:1337/reviews/${id}`, {
+      method: 'put',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(review),
+    })
+      .then(res => res.json())
+      .catch(error => console.error('Error:', error))
+      .then(response => console.log('Success:', response));
+  }
+
+  static updateIsFavortie(id, state, callback) {
+    console.log(typeof state);
+    console.log(`http://localhost:1337/restaurants/${id}/?is_favorite=${state}`);
+    fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${state}`, {
+      method: 'put',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+    })
+      .then(res => res.json())
+      .catch((error) => {
+        console.error('Error:', error);
+        callback(error, null);
+      })
+      .then((response) => {
+        console.log('Success:', response);
+        DBHelper.placeRestaurantIntoIDB(response);
+        callback(null, response);
       });
   }
 
@@ -54,19 +215,29 @@ class DBHelper {
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
-    // fetch all restaurants with proper error handling.
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        const restaurant = restaurants.find(r => r.id == id);
-        if (restaurant) { // Got the restaurant
-          callback(null, restaurant);
-        } else { // Restaurant does not exist in the database
-          callback('Restaurant does not exist', null);
+    this.showCachedRestaurantByID(id)
+      .then((cachedRestaurant) => {
+        if (cachedRestaurant === undefined || cachedRestaurant.length === 0) {
+          this.getRestaurantFromNetwork(id, callback);
+        } else {
+          console.log('restaurant from cache');
+          cachedRestaurant.source = 'cache';
+          callback(null, cachedRestaurant);
+          this.getRestaurantFromNetwork(id, callback);
         }
-      }
-    });
+      });
+  }
+
+  static getRestaurantFromNetwork(id, callback) {
+    fetch(`http://localhost:1337/restaurants/${id}`)
+      .then(response => response.json())
+      .then((fetchedRestaurant) => {
+        DBHelper.placeRestaurantIntoIDB(fetchedRestaurant);
+        fetchedRestaurant.source = 'network';
+        console.log('restaurant from network');
+        callback(null, fetchedRestaurant);
+      })
+      .catch(err => err);
   }
 
   /**
@@ -132,7 +303,7 @@ class DBHelper {
         callback(error, null);
       } else {
         // Get all neighborhoods from all restaurants
-        const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
+        const neighborhoods = restaurants.map((_v, i) => restaurants[i].neighborhood);
         // Remove duplicates from neighborhoods
         const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
         callback(null, uniqueNeighborhoods);
@@ -150,7 +321,7 @@ class DBHelper {
         callback(error, null);
       } else {
         // Get all cuisines from all restaurants
-        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
+        const cuisines = restaurants.map((_v, i) => restaurants[i].cuisine_type);
         // Remove duplicates from cuisines
         const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
         callback(null, uniqueCuisines);
@@ -176,7 +347,7 @@ class DBHelper {
   /**
    * Map marker for a restaurant.
    */
-  static mapMarkerForRestaurant(restaurant, map) {
+  static mapMarkerForRestaurant(restaurant, _map) {
     // https://leafletjs.com/reference-1.3.0.html#marker
     const marker = new L.marker(
       [restaurant.latlng.lat, restaurant.latlng.lng],
@@ -197,10 +368,22 @@ class DBHelper {
     if (!navigator.serviceWorker) {
       return Promise.resolve();
     }
-    return idb.open('restaurants-reviews', 1, (upgradeDb) => {
-      const store = upgradeDb.createObjectStore('restaurants', {
-        keyPath: 'id',
-      });
+    return idb.open('restaurants-reviews', 3, (upgradeDb) => {
+      switch (upgradeDb.oldVersion) {
+        case 0:
+          const store = upgradeDb.createObjectStore('restaurants', {
+            keyPath: 'id',
+          });
+        case 1:
+          const reviewsStore = upgradeDb.createObjectStore('reviews', {
+            keyPath: 'id',
+          });
+          reviewsStore.createIndex('restaurant', 'restaurant_id');
+        case 2:
+          const deferedReviewsStore = upgradeDb.createObjectStore('defered-reviews', {
+            keyPath: 'restaurant_id',
+          });
+      }
     });
   }
 
@@ -220,12 +403,113 @@ class DBHelper {
     });
   }
 
+  /**
+   * Place Restaurant in IDB
+   * @param {*} restaurants
+   */
+  static placeRestaurantIntoIDB(restaurant) {
+    const dbPromise = DBHelper.openIDB();
+    dbPromise.then((db) => {
+      if (!db) return;
+      const tx = db.transaction('restaurants', 'readwrite');
+      const restaurantsStore = tx.objectStore('restaurants');
+      restaurantsStore.put(restaurant);
+    });
+  }
+
+  /**
+   * Place Reviews in IDB
+   * @param {*} reviews
+   */
+  static placeReviewsIntoIDB(reviews) {
+    const dbPromise = DBHelper.openIDB();
+    dbPromise.then((db) => {
+      if (!db) return;
+      const tx = db.transaction('reviews', 'readwrite');
+      const reviewsStore = tx.objectStore('reviews');
+      reviews.forEach((review) => {
+        reviewsStore.put(review);
+      });
+    });
+  }
+
+  /**
+   * Place defered Reviews in IDB
+   * @param {*} reviews
+   */
+  static placedeferedReviewsIntoIDB(review) {
+    const dbPromise = DBHelper.openIDB();
+    dbPromise.then((db) => {
+      if (!db) return;
+      const tx = db.transaction('defered-reviews', 'readwrite');
+      const reviewsStore = tx.objectStore('defered-reviews');
+      reviewsStore.put(review);
+    });
+  }
+
+  /**
+   * Show Cached Restaurants
+   */
   static showCachedRestaurants() {
     const dbPromise = DBHelper.openIDB();
     return dbPromise.then((db) => {
       if (!db) return Promise.resolve();
       const data = db.transaction('restaurants').objectStore('restaurants');
       return data.getAll().then(restaurants => restaurants);
+    });
+  }
+
+  /**
+   * Show Cached Restaurants
+   */
+  static showCachedRestaurantByID(id) {
+    const dbPromise = DBHelper.openIDB();
+    return dbPromise.then((db) => {
+      if (!db) return Promise.resolve();
+      const data = db.transaction('restaurants').objectStore('restaurants');
+      return data.get(parseInt(id)).then(restaurant => restaurant);
+    });
+  }
+
+  /**
+   * Show Cached Reviews By Restaurant ID
+   */
+  static showCachedReviewsByRestaurantID(restaurantID) {
+    const dbPromise = DBHelper.openIDB();
+    return dbPromise.then((db) => {
+      if (!db) return Promise.resolve();
+      const data = db.transaction('reviews').objectStore('reviews');
+      const restaurantIndex = data.index('restaurant');
+      return restaurantIndex.getAll(restaurantID).then(reviews => reviews);
+    });
+  }
+
+  /**
+   * Get Defered
+   */
+  static getDeferedReviews() {
+    const dbPromise = DBHelper.openIDB();
+    return dbPromise.then((db) => {
+      if (!db) return Promise.resolve();
+      const data = db.transaction('defered-reviews').objectStore('defered-reviews');
+      return data.getAll().then(reviews => reviews);
+    });
+  }
+
+  /**
+   *
+   */
+  static deleteDeferedReviewByRestaurantID(restaurantID) {
+    const dbPromise = DBHelper.openIDB();
+    return dbPromise.then((db) => {
+      if (!db) return Promise.resolve();
+      const tx = db.transaction('defered-reviews', 'readwrite');
+      const reviewsStore = tx.objectStore('defered-reviews');
+      console.log(restaurantID);
+      reviewsStore.delete(restaurantID);
+      return tx.complete;
+    }).then(() => {
+      console.log(`Deffered Review deleted from restaurant ${restaurantID}`);
     });
   }
 }
