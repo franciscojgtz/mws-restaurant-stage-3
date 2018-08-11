@@ -1343,6 +1343,15 @@
         "createdAt": 1533877013910,
         "updatedAt": 1533877013910,
         "id": 126
+      },
+      {
+        "restaurant_id": 9,
+        "name": "Amanda",
+        "rating": "3",
+        "comments": "dfa adfs ",
+        "createdAt": 1533952749307,
+        "updatedAt": 1533952749307,
+        "id": 127
       }
     ]
   },
@@ -1398,7 +1407,7 @@
       "id": 10
     },
     "reviews": {
-      "id": 126
+      "id": 127
     }
   }
 }
