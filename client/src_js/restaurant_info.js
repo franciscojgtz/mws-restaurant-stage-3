@@ -31,7 +31,7 @@ const initMap = () => {
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         id: 'mapbox.streets',
       }).addTo(newMap);
-      //requestAnimationFrame(() => { newMap.invalidateSize(); });
+      // requestAnimationFrame(() => { newMap.invalidateSize(); });
       setTimeout(() => { newMap.invalidateSize(); }, 400);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
@@ -76,7 +76,7 @@ const fetchRestaurantFromURL = (callback) => {
       // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, (error, reviews) => {
         console.log(reviews);
-        
+
 
         // if the restaurant has alredy been painted don't do it again.
         if (self.reviews !== undefined) {
@@ -321,14 +321,28 @@ function getPhotoDescription(photograph) {
  * Create Responsive image
  */
 function createResponsiveImage(restaurant) {
-  const image = document.getElementById('restaurant-img');
+  const image = document.createElement('img');
+  const pictureElement = document.getElementById('restaurant-img');
+  const webPSource = document.createElement('source');
+  const jpgSource = document.createElement('source');
   image.className = 'restaurant-img';
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.className = 'lazyload';
+  image.setAttribute('data-sizes', 'auto');
   image.alt = `${restaurant.name} restaurant, ${getPhotoDescription(restaurant.photograph)}`;
-
   const restImg = DBHelper.imageUrlForRestaurant(restaurant).slice(0, -4);
-  image.srcset = `${restImg}_300.webp 300w, ${restImg}_350.webp 350w, ${restImg}_400.webp 400w, ${restImg}_450.webp 450w, ${restImg}_500.webp 500w, ${restImg}_550.webp 550w, ${restImg}_600.webp 600w, ${restImg}_700.webp 700w, ${restImg}_800.webp 800w`;
-  image.sizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
+  const imgSizes = '(max-width: 779px) calc(100vw - 4rem), (min-width: 800px) and (max-width: 1023px) calc(60vw - 4rem), (min-width: 1024px) calc(50vw - 4rem), (min-width: 1600px) 760px, calc(100vw - 4rem)';
+  image.setAttribute('data-src', `${DBHelper.imageUrlForRestaurant(restaurant)}`);
+  webPSource.setAttribute('data-srcset', `${restImg}_300.webp 300w, ${restImg}_350.webp 350w, ${restImg}_400.webp 400w, ${restImg}_450.webp 450w, ${restImg}_500.webp 500w, ${restImg}_550.webp 550w, ${restImg}_600.webp 600w, ${restImg}_700.webp 700w, ${restImg}_800.webp 800w`);
+  webPSource.type = 'image/webp';
+  webPSource.sizes = imgSizes;
+
+  jpgSource.setAttribute('data-srcset', `${restImg}_300.jpg 300w, ${restImg}_350.jpg 350w, ${restImg}_400.jpg 400w, ${restImg}_450.jpg 450w, ${restImg}_500.jpg 500w, ${restImg}_550.jpg 550w, ${restImg}_600.jpg 600w, ${restImg}_700.jpg 700w, ${restImg}_800.jpg 800w`);
+  jpgSource.type = 'image/jpg';
+  jpgSource.sizes = imgSizes;
+
+  pictureElement.append(webPSource);
+  pictureElement.append(jpgSource);
+  pictureElement.append(image);
 }
 
 /**
@@ -348,11 +362,11 @@ document.getElementById('button-favorite').addEventListener('click', () => {
     self.restaurant = responseRestaurant;
     const favButton = document.getElementById('button-favorite');
     if (responseRestaurant.is_favorite === 'true' || responseRestaurant.is_favorite === true) {
-      favButton.innerHTML = `★`;
+      favButton.innerHTML = '★';
       favButton.classList.add('button-favorite--favorite');
       favButton.classList.remove('button-favorite--not-favorite');
     } else {
-      favButton.innerHTML = `☆`;
+      favButton.innerHTML = '☆';
       favButton.classList.add('button-favorite--not-favorite');
       favButton.classList.remove('button-favorite--favorite');
     }
