@@ -31,6 +31,7 @@ const initMap = () => {
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         id: 'mapbox.streets',
       }).addTo(newMap);
+      // TODO: Refactor using requestAnimationFrame
       // requestAnimationFrame(() => { newMap.invalidateSize(); });
       setTimeout(() => { newMap.invalidateSize(); }, 400);
       fillBreadcrumb();
@@ -41,6 +42,7 @@ const initMap = () => {
 
 /**
  * Get current restaurant from page URL.
+ * @param {function} callback 
  */
 const fetchRestaurantFromURL = (callback) => {
   if (self.restaurant) { // restaurant already fetched!
@@ -53,9 +55,9 @@ const fetchRestaurantFromURL = (callback) => {
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
-      // check if we got restaurant from network and we already have restaurants from cache.
+      // check if we got restaurant from network and we already
+      // have restaurants from cache.
       // THIS COULD ALSO BE CHECKED IN DBHELPER.JS
-      console.log(restaurant);
       if (self.restaurant !== 'undefined' && restaurant.source === 'network') {
         self.cacheRestaurant = self.restaurant;
       }
@@ -75,10 +77,11 @@ const fetchRestaurantFromURL = (callback) => {
 
       // fetch the reviews from the network
       fetchReviewsByRestaurantID(restaurant.id, (error, reviews) => {
-        console.log(reviews);
-
-
-        // if the restaurant has alredy been painted don't do it again.
+        if(error) {
+          console.log(error);
+          return;
+        }
+        // if the restaurant has alredy been painted return.
         if (self.reviews !== undefined) {
           if (self.reviews[0].source === 'cache') {
             return;
@@ -94,6 +97,7 @@ const fetchRestaurantFromURL = (callback) => {
 
 /**
  * Create restaurant HTML and add it to the webpage
+ * @param {object} restaurant 
  */
 const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
@@ -106,8 +110,6 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     favButton.innerHTML = '☆';
     favButton.classList.add('button-favorite--not-favorite');
   }
-
-  // favButton.innerHTML = restaurant.is_favorite === 'true' || restaurant.is_favorite === true ? '★' : '☆';
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -129,6 +131,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
 
 /**
  * Create restaurant operating hours HTML table and add it to the webpage.
+ * @param {object} operatingHours 
  */
 const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
@@ -152,14 +155,23 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
 /**
  * Fetch Reviews by restaurant id from network
  */
+/**
+ * 
+ * @param {number} restaurantID 
+ * @param {function} callback 
+ */
 const fetchReviewsByRestaurantID = (restaurantID, callback) => {
   DBHelper.fetchReviewsByRestaurantID(restaurantID, (error, reviews) => {
+    if (error) { // error
+      console.log(error);
+      return;
+    }
     callback(null, reviews);
   });
 };
 
 /**
- * Handle review form
+ * Handle review form on submit
  */
 document.getElementById('reviews-form').addEventListener('submit', (event) => {
   event.preventDefault();
@@ -189,20 +201,40 @@ document.getElementById('reviews-form').addEventListener('submit', (event) => {
   });
 }, false);
 
+/**
+ * Delete review
+ * @param {number} id 
+ */
 const deleteReview = (id) => {
   DBHelper.deleteReview(id);
 };
 
+/**
+ * Update review
+ * @param {number} id 
+ * @param {object} review 
+ */
 const updateReview = (id, review) => {
   DBHelper.updateReview(id, review);
 };
 
-window.addEventListener('offline', (e) => { console.log('offline'); });
+/**
+ * Handle an offline event
+ */
+window.addEventListener('offline', (e) => {
+  console.log('offline');
+});
 
-window.addEventListener('online', (e) => { console.log('online'); });
+/**
+ * Handle an online event
+ */
+window.addEventListener('online', (e) => {
+  console.log('online');
+});
 
 /**
  * Create all reviews HTML and add them to the webpage.
+ * @param {object} reviews 
  */
 const fillReviewsHTML = (reviews = self.reviews) => {
   const container = document.getElementById('reviews-container');
@@ -224,6 +256,8 @@ const fillReviewsHTML = (reviews = self.reviews) => {
 
 /**
  * Create review HTML and add it to the webpage.
+ * @param {object} review 
+ * @returns {object} li element
  */
 const createReviewHTML = (review) => {
   const li = document.createElement('li');
@@ -266,6 +300,7 @@ const timeConverter = (timeStamp) => {
 
 /**
  * Add restaurant name to the breadcrumb navigation menu
+ * @param {object} restaurant 
  */
 const fillBreadcrumb = (restaurant = self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
@@ -276,6 +311,8 @@ const fillBreadcrumb = (restaurant = self.restaurant) => {
 
 /**
  * Get a parameter by name from page URL.
+ * @param {string} name 
+ * @param {string} url 
  */
 const getParameterByName = (name, url) => {
   if (!url) { url = window.location.href; }
@@ -289,9 +326,10 @@ const getParameterByName = (name, url) => {
 
 /**
  * Get image alt
+ * @param {string or number} photograph 
  */
-function getPhotoDescription(photograph) {
-  switch (parseInt(photograph)) {
+const getPhotoDescription = (photograph) => {
+  switch (parseInt(photograph, 10)) {
     case 1:
       return 'classical indoor decoration';
     case 2:
@@ -319,8 +357,10 @@ function getPhotoDescription(photograph) {
 
 /**
  * Create Responsive image
+ * @param {Object} restaurant
+ * @returns {Object} pictureElement
  */
-function createResponsiveImage(restaurant) {
+const createResponsiveImage = (restaurant) => {
   const image = document.createElement('img');
   const pictureElement = document.getElementById('restaurant-img');
   const webPSource = document.createElement('source');
@@ -350,10 +390,8 @@ function createResponsiveImage(restaurant) {
  */
 document.getElementById('button-favorite').addEventListener('click', () => {
   const restaurant = self.restaurant;
-  console.log(restaurant);
   let state = false;
   if (restaurant.is_favorite === 'true' || restaurant.is_favorite === true) {
-    console.log(restaurant.is_favorite);
     state = true;
   }
 

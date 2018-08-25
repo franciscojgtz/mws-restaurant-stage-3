@@ -2,6 +2,8 @@
 // const dbHelper = new DBHelper(idb);
 
 
+// restaurants holds the current restaurants being display
+// allRestaurants holds all the restaurants in the app
 let restaurants,
   neighborhoods,
   cuisines;
@@ -10,12 +12,57 @@ let allRestaurants;
 const markers = [];
 
 /**
- * Fetch neighborhoods and cuisines as soon as the page is loaded.
+ * Inititate map and Fetch restaurants as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
-  initMap1(); // added
+  initMap();
 });
 
+/**
+ * Initialize leaflet map, called from HTML.
+ */
+const initMap = () => {
+  self.newMap = L.map('map', {
+    center: [40.722216, -73.987501],
+    zoom: 12,
+    scrollWheelZoom: false,
+  });
+  L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.jpg70?access_token={mapboxToken}', {
+    mapboxToken: 'pk.eyJ1IjoiZnJhbmNpc2Nvamd0eiIsImEiOiJjamlzOHRncjEwbHU4M3ByeTdpenN5M3YwIn0.y1U7z4RQa0J58bhLtiYlqg',
+    maxZoom: 18,
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+      '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+      'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    id: 'mapbox.streets',
+  }).addTo(newMap);
+  // TODO: setTimeout makes our app not work at 60fps. Refactor using requestAnimationFrame();
+  // requestAnimationFrame(() => { newMap.invalidateSize(); });
+  setTimeout(() => { newMap.invalidateSize(); }, 400);
+
+  // get all restaurants
+  DBHelper.fetchRestaurants((error, restaurants) => {
+    if (error) {
+      console.log(error);
+    } else {
+      if (self.allRestaurants !== undefined) {
+        // TODO: check if there are more restaurants fetched than in chache.
+        //  If so, display the restaurants from the network
+        // We already got the restaurants either from cache or network
+        self.allRestaurants = restaurants;
+        return;
+      }
+      self.allRestaurants = restaurants;
+      self.restaurants = restaurants;
+
+      updateRestaurants();
+    }
+  });
+};
+
+/**
+ * Get all restaurants neighborhoods from restaurants
+ * @param {Array} restaurants 
+ */
 const getNeighborhoods = (restaurants) => {
   // Get all neighborhoods from all restaurants
   const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
@@ -25,6 +72,10 @@ const getNeighborhoods = (restaurants) => {
   fillNeighborhoodsHTML();
 };
 
+/**
+ * Get all cuisines from restaurants
+ * @param {Array} restaurants 
+ */
 const getCuisnes = (restaurants) => {
   // Get all cuisines from all restaurants
   const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
@@ -49,6 +100,12 @@ const fetchNeighborhoods = () => {
   });
 };
 
+/**
+ * Get neighborhoods 
+ * @param {string} cuisine 
+ * @param {string} neighborhood 
+ * @param {function} callback 
+ */
 const getRestaurantByCuisineAndNeighborhood = (cuisine, neighborhood, callback) => {
   let results = self.allRestaurants;
   if (cuisine !== 'all') { // filter by cuisine
@@ -62,11 +119,12 @@ const getRestaurantByCuisineAndNeighborhood = (cuisine, neighborhood, callback) 
 
 /**
  * Set neighborhoods HTML.
+ * @param {Array} neighborhoods 
  */
 const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
   const select = document.getElementById('neighborhoods-select');
 
-  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  // TODO: CHECK COULD CAUSE A PAINT ISSUE
   select.innerHTML = '';
   const optionAll = document.createElement('option');
   optionAll.innerHTML = 'All Neighborhoods';
@@ -99,14 +157,15 @@ const fetchCuisines = () => {
 
 /**
  * Set cuisines HTML.
+ * @param {Array} cuisines 
  */
 const fillCuisinesHTML = (cuisines = self.cuisines) => {
   const select = document.getElementById('cuisines-select');
 
-  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  // TODO: CHECK COULD CAUSE A PAINT ISSUE
   select.innerHTML = '';
 
-  // TO DO: CHECK COULD CAUSE A PAINT ISSUE
+  // TODO: CHECK COULD CAUSE A PAINT ISSUE
   select.innerHTML = '';
   const optionAll = document.createElement('option');
   optionAll.innerHTML = 'All Cuisines';
@@ -118,44 +177,6 @@ const fillCuisinesHTML = (cuisines = self.cuisines) => {
     option.innerHTML = cuisine;
     option.value = cuisine;
     select.append(option);
-  });
-};
-
-/**
- * Initialize leaflet map, called from HTML.
- */
-const initMap1 = () => {
-  self.newMap = L.map('map', {
-    center: [40.722216, -73.987501],
-    zoom: 12,
-    scrollWheelZoom: false,
-  });
-  L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.jpg70?access_token={mapboxToken}', {
-    mapboxToken: 'pk.eyJ1IjoiZnJhbmNpc2Nvamd0eiIsImEiOiJjamlzOHRncjEwbHU4M3ByeTdpenN5M3YwIn0.y1U7z4RQa0J58bhLtiYlqg',
-    maxZoom: 18,
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-      '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-      'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    id: 'mapbox.streets',
-  }).addTo(newMap);
-  // requestAnimationFrame(() => { newMap.invalidateSize(); });
-  setTimeout(() => { newMap.invalidateSize(); }, 400);
-
-  // get all restaurants
-  DBHelper.fetchRestaurants((error, restaurants) => {
-    if (error) {
-      console.log(error);
-    } else {
-      if (self.allRestaurants !== undefined) {
-        // We already got the restaurants either from cache or network
-        self.allRestaurants = restaurants;
-        return;
-      }
-      self.allRestaurants = restaurants;
-      self.restaurants = restaurants;
-
-      updateRestaurants();
-    }
   });
 };
 
@@ -173,22 +194,19 @@ const updateRestaurants = () => {
   const neighborhood = nSelect[nIndex].value;
 
   getRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      if (cuisine === 'all' && neighborhood === 'all') {
-        getNeighborhoods(restaurants);
-        getCuisnes(restaurants);
-      }
-      resetRestaurants(restaurants);
-      fillRestaurantsHTML();
+    if (cuisine === 'all' && neighborhood === 'all') {
+      getNeighborhoods(restaurants);
+      getCuisnes(restaurants);
     }
+    resetRestaurants(restaurants);
+    fillRestaurantsHTML();
   });
 };
 
 /**
-* Clear current restaurants, their HTML and remove their map markers.
-*/
+ * Clear current restaurants, their HTML and remove their map markers.
+ * @param {Array} restaurants 
+ */
 const resetRestaurants = (restaurants) => {
   // Remove all restaurants
   self.restaurants = [];
@@ -203,8 +221,10 @@ const resetRestaurants = (restaurants) => {
   self.restaurants = restaurants;
 };
 
+
 /**
  * Create all restaurants HTML and add them to the webpage.
+ * @param {Array} restaurants 
  */
 const fillRestaurantsHTML = (restaurants = self.restaurants) => {
   const ul = document.getElementById('restaurants-list');
@@ -216,6 +236,8 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
 
 /**
  * Create restaurant HTML.
+ * @param {Array} restaurant 
+ * @returns {Object} li element
  */
 const createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
@@ -254,6 +276,7 @@ const createRestaurantHTML = (restaurant) => {
 
 /**
  * Add markers for current restaurants to the map.
+ * @param {Array} restaurants 
  */
 const addMarkersToMap = (restaurants = self.restaurants) => {
   restaurants.forEach((restaurant) => {
@@ -269,9 +292,10 @@ const addMarkersToMap = (restaurants = self.restaurants) => {
 
 /**
  * Get image alt
+ * @param {string or number} photograph 
  */
-function getPhotoDescription(photograph) {
-  switch (parseInt(photograph)) {
+const getPhotoDescription = (photograph) => {
+  switch (parseInt(photograph, 10)) {
     case 1:
       return 'classical indoor decoration';
     case 2:
@@ -295,12 +319,14 @@ function getPhotoDescription(photograph) {
     default:
       return 'error';
   }
-}
+};
 
 /**
  * Create Responsive image
+ * @param {Object} restaurant
+ * @returns {Object} pictureElement
  */
-function createResponsiveImage(restaurant) {
+const createResponsiveImage = (restaurant) => {
   const image = document.createElement('img');
   const pictureElement = document.createElement('picture');
   const webPSource = document.createElement('source');
@@ -326,4 +352,4 @@ function createResponsiveImage(restaurant) {
   pictureElement.append(image);
 
   return pictureElement;
-}
+};

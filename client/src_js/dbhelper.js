@@ -64,7 +64,6 @@ class DBHelper {
    * Fetch reviews by restaurant ID
    */
   static fetchReviewsByRestaurantID(restaurantID, callback) {
-    console.log(restaurantID);
     if (this.getReviewsSource === 'network') {
       return;
     }
@@ -106,7 +105,6 @@ class DBHelper {
       deferedReviews.forEach((deferedReview) => {
         this.postReview(deferedReview, (error, reviewResponse) => {
           // delete review from defered-reviews store
-          console.log(reviewResponse.restaurant_id);
           if (error) {
             console.log(error);
           } else {
@@ -191,8 +189,6 @@ class DBHelper {
   }
 
   static updateIsFavortie(id, state, callback) {
-    console.log(typeof state);
-    console.log(`http://localhost:1337/restaurants/${id}/?is_favorite=${state}`);
     fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${state}`, {
       method: 'put',
       headers: {
@@ -505,7 +501,6 @@ class DBHelper {
       if (!db) return Promise.resolve();
       const tx = db.transaction('defered-reviews', 'readwrite');
       const reviewsStore = tx.objectStore('defered-reviews');
-      console.log(restaurantID);
       reviewsStore.delete(restaurantID);
       return tx.complete;
     }).then(() => {
