@@ -6,10 +6,16 @@ let reviewsSource = null;
  * Common database helper functions.
  */
 class DBHelper {
+  /**
+   * Get Reviews Source
+   */
   static get getReviewsSource() {
     return reviewsSource;
   }
 
+  /**
+   * Set Reviews Source
+   */
   static set setReviewsSource(source) {
     reviewsSource = source;
   }
@@ -19,11 +25,12 @@ class DBHelper {
    */
   static get DATABASE_URL() {
     const port = 1337; // Change this to your server port
-    return 'http://localhost:1337/restaurants';
+    return `http://localhost:${port}/restaurants`;
   }
 
   /**
-   * Fetch all restaurants.
+   * Fetch all restaurants. Get restaurants from cache and/or network
+   * @param {function} callback 
    */
   static fetchRestaurants(callback) {
     this.showCachedRestaurants().then((cachedRestaurants) => {
@@ -45,7 +52,10 @@ class DBHelper {
         callback(error, null);
       });
   }
-
+  /**
+   * Get Restaurants from Network
+   * @param {function} callback 
+   */
   static getRestaurantsFromNetwork(callback) {
     fetch(DBHelper.DATABASE_URL)
       .then(response => response.json())
@@ -62,8 +72,11 @@ class DBHelper {
 
   /**
    * Fetch reviews by restaurant ID
+   * @param {number} restaurantID 
+   * @param {function} callback 
    */
   static fetchReviewsByRestaurantID(restaurantID, callback) {
+    // We have the latest reviews from the network
     if (this.getReviewsSource === 'network') {
       return;
     }
@@ -75,6 +88,7 @@ class DBHelper {
       return;
     }
 
+    // Get restaurant reviews from cache
     this.showCachedReviewsByRestaurantID(restaurantID).then((cachedReviews) => {
       this.getDeferedReviews().then((deferedReviews) => {
         deferedReviews.forEach((deferedReview) => {
@@ -100,6 +114,11 @@ class DBHelper {
     });
   }
 
+  /**
+   * Get reviews from network and delete defered reviews
+   * @param {number} restaurantID 
+   * @param {function} callback 
+   */
   static getReviewsFromNetwork(restaurantID, callback) {
     this.getDeferedReviews().then((deferedReviews) => {
       deferedReviews.forEach((deferedReview) => {
@@ -114,6 +133,7 @@ class DBHelper {
       });
     });
 
+    // fetch reviews from network
     fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantID}`)
       .then(response => response.json())
       .then((fetchedReviews) => {
@@ -132,7 +152,7 @@ class DBHelper {
 
   /**
    * post review
-   * @param {review object} review
+   * @param {object} review
    */
   static postReview(review, callback) {
     fetch('http://localhost:1337/reviews/', {
@@ -145,12 +165,11 @@ class DBHelper {
       .then(res => res.json())
       .then((response) => {
         console.log('Success:', response);
-        // TO DO add review to indexDB
+        // TODO: add review to indexDB
         callback(null, response);
       })
       .catch((error) => {
         console.error('Error:', error);
-        // To do defer review
         const timeStamp = Date.now();
         review.createdAt = timeStamp;
         review.updatedAt = timeStamp;
@@ -161,7 +180,7 @@ class DBHelper {
 
   /**
    * Delete review
-   * @param {Review ID} id
+   * @param {number} id
    */
   static deleteReview(id) {
     fetch(`http://localhost:1337/reviews/${id}`, {
@@ -172,8 +191,8 @@ class DBHelper {
 
   /**
    * Update review
-   * @param {Review ID} id
-   * @param {Review object} review
+   * @param {number} id
+   * @param {object} review
    */
   static updateReview(id, review) {
     fetch(`http://localhost:1337/reviews/${id}`, {
@@ -188,6 +207,12 @@ class DBHelper {
       .then(response => console.log('Success:', response));
   }
 
+  /**
+   * 
+   * @param {number} id 
+   * @param {boolean} state 
+   * @param {function} callback 
+   */
   static updateIsFavortie(id, state, callback) {
     fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${state}`, {
       method: 'put',
@@ -209,6 +234,8 @@ class DBHelper {
 
   /**
    * Fetch a restaurant by its ID.
+   * @param {number} id 
+   * @param {function} callback 
    */
   static fetchRestaurantById(id, callback) {
     this.showCachedRestaurantByID(id)
@@ -224,6 +251,11 @@ class DBHelper {
       });
   }
 
+  /**
+   * Get restaurant from network
+   * @param {number} id 
+   * @param {function} callback 
+   */
   static getRestaurantFromNetwork(id, callback) {
     fetch(`http://localhost:1337/restaurants/${id}`)
       .then(response => response.json())
@@ -238,6 +270,8 @@ class DBHelper {
 
   /**
    * Fetch restaurants by a cuisine type with proper error handling.
+   * @param {string} cuisine 
+   * @param {function} callback 
    */
   static fetchRestaurantByCuisine(cuisine, callback) {
     // Fetch all restaurants  with proper error handling
@@ -254,6 +288,8 @@ class DBHelper {
 
   /**
    * Fetch restaurants by a neighborhood with proper error handling.
+   * @param {string} neighborhood 
+   * @param {function} callback 
    */
   static fetchRestaurantByNeighborhood(neighborhood, callback) {
     // Fetch all restaurants
@@ -270,6 +306,9 @@ class DBHelper {
 
   /**
    * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
+   * @param {string} cuisine 
+   * @param {string} neighborhood 
+   * @param {function} callback 
    */
   static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
     // Fetch all restaurants
@@ -291,6 +330,7 @@ class DBHelper {
 
   /**
    * Fetch all neighborhoods with proper error handling.
+   * @param {function} callback 
    */
   static fetchNeighborhoods(callback) {
     // Fetch all restaurants
@@ -309,6 +349,7 @@ class DBHelper {
 
   /**
    * Fetch all cuisines with proper error handling.
+   * @param {function} callback 
    */
   static fetchCuisines(callback) {
     // Fetch all restaurants
@@ -327,6 +368,7 @@ class DBHelper {
 
   /**
    * Restaurant page URL.
+   * @param {object} restaurant 
    */
   static urlForRestaurant(restaurant) {
     return (`./restaurant.html?id=${restaurant.id}`);
@@ -334,6 +376,7 @@ class DBHelper {
 
   /**
    * Restaurant image URL.
+   * @param {object} restaurant 
    */
   static imageUrlForRestaurant(restaurant) {
     // added .jpg so it looks for a jpg image
@@ -342,6 +385,8 @@ class DBHelper {
 
   /**
    * Map marker for a restaurant.
+   * @param {object} restaurant 
+   * @param {object} _map 
    */
   static mapMarkerForRestaurant(restaurant, _map) {
     // https://leafletjs.com/reference-1.3.0.html#marker
@@ -359,6 +404,7 @@ class DBHelper {
 
   /**
    * Open IDB
+   * @returns {promise} IDB
    */
   static openIDB() {
     if (!navigator.serviceWorker) {
@@ -385,7 +431,7 @@ class DBHelper {
 
   /**
    * Place Restaurants in IDB
-   * @param {*} restaurants
+   * @param {array} restaurants
    */
   static placeRestaurantsIntoIDB(restaurants) {
     const dbPromise = DBHelper.openIDB();
@@ -401,7 +447,7 @@ class DBHelper {
 
   /**
    * Place Restaurant in IDB
-   * @param {*} restaurants
+   * @param {array} restaurants
    */
   static placeRestaurantIntoIDB(restaurant) {
     const dbPromise = DBHelper.openIDB();
@@ -415,7 +461,7 @@ class DBHelper {
 
   /**
    * Place Reviews in IDB
-   * @param {*} reviews
+   * @param {array} reviews
    */
   static placeReviewsIntoIDB(reviews) {
     const dbPromise = DBHelper.openIDB();
@@ -431,7 +477,7 @@ class DBHelper {
 
   /**
    * Place defered Reviews in IDB
-   * @param {*} reviews
+   * @param {array} reviews
    */
   static placedeferedReviewsIntoIDB(review) {
     const dbPromise = DBHelper.openIDB();
@@ -445,6 +491,7 @@ class DBHelper {
 
   /**
    * Show Cached Restaurants
+   * @returns {promise array} restaurants
    */
   static showCachedRestaurants() {
     const dbPromise = DBHelper.openIDB();
@@ -457,6 +504,8 @@ class DBHelper {
 
   /**
    * Show Cached Restaurants
+   * @param {number} id 
+   * @returns {promise object} restaurant
    */
   static showCachedRestaurantByID(id) {
     const dbPromise = DBHelper.openIDB();
@@ -469,6 +518,8 @@ class DBHelper {
 
   /**
    * Show Cached Reviews By Restaurant ID
+   * @param {number} restaurantID 
+   * @returns {promise array} reviews
    */
   static showCachedReviewsByRestaurantID(restaurantID) {
     const dbPromise = DBHelper.openIDB();
@@ -481,7 +532,8 @@ class DBHelper {
   }
 
   /**
-   * Get Defered
+   * Get defered reviews
+   * @returns {promise array} reviews
    */
   static getDeferedReviews() {
     const dbPromise = DBHelper.openIDB();
@@ -493,7 +545,8 @@ class DBHelper {
   }
 
   /**
-   *
+   * Delete defered review
+   * @param {number} restaurantID 
    */
   static deleteDeferedReviewByRestaurantID(restaurantID) {
     const dbPromise = DBHelper.openIDB();

@@ -1,1 +1,76 @@
-"use strict";function notifySWUpdates(e){console.log("There is a new Service Worker available");var t=document.createElement("button");t.classList.add("sw-button"),t.innerHTML="Update Available",document.getElementsByTagName("body")[0].appendChild(t),t.addEventListener("click",function(){e.postMessage({activate:"true"})})}function trackSWStates(e){var t=this;e.addEventListener("statechange",function(){"installed"===t.state&&notifySWUpdates(e)})}function registerServiceWorker(){navigator.serviceWorker.register("sw.js").then(function(e){if(navigator.serviceWorker.controller){e.waiting&&notifySWUpdates(e.waiting),e.installing&&trackSWStates(e.installing),e.addEventListener("updatefound",function(){trackSWStates(e.installing)});var t=void 0;navigator.serviceWorker.addEventListener("controllerchange",function(){t||(window.location.reload(),t=!0)})}}).catch(function(e){console.log("SW failed: ",e)})}registerServiceWorker();
+'use strict';
+
+/**
+ * Notify service worker updates
+ * @param {object} reg 
+ */
+function notifySWUpdates(reg) {
+  console.log('There is a new Service Worker available');
+  // create button
+  var buttonSW = document.createElement('button');
+  buttonSW.classList.add('sw-button');
+  buttonSW.innerHTML = 'Update Available';
+  // append button
+  var docBody = document.getElementsByTagName('body')[0];
+  docBody.appendChild(buttonSW);
+  // onclick, post message
+  buttonSW.addEventListener('click', function () {
+    reg.postMessage({ activate: 'true' });
+  });
+}
+
+/**
+ * Track service worker states
+ * @param {object} reg 
+ */
+function trackSWStates(reg) {
+  var _this = this;
+
+  reg.addEventListener('statechange', function () {
+    if (_this.state === 'installed') {
+      notifySWUpdates(reg);
+    }
+  });
+}
+
+/**
+ * Register service worker
+ */
+function registerServiceWorker() {
+  navigator.serviceWorker.register('sw.js').then(function (reg) {
+    // refers to the SW that controls this page
+    if (!navigator.serviceWorker.controller) {
+      // page didn't load using a SW
+      // loaded from the network
+      return;
+    }
+
+    if (reg.waiting) {
+      // there's an update ready!
+      notifySWUpdates(reg.waiting);
+    }
+
+    if (reg.installing) {
+      // there's an update in progress
+      trackSWStates(reg.installing);
+    }
+
+    reg.addEventListener('updatefound', function () {
+      trackSWStates(reg.installing);
+    });
+
+    var reloading = void 0;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (reloading) return;
+      window.location.reload();
+      reloading = true;
+    });
+  }).catch(function (err) {
+    console.log('SW failed: ', err);
+  });
+}
+
+/**
+ * register service worker
+ */
+registerServiceWorker();

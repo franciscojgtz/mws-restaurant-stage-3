@@ -1,3 +1,7 @@
+/**
+ * Notify service worker updates
+ * @param {object} reg 
+ */
 function notifySWUpdates(reg) {
   console.log('There is a new Service Worker available');
   // create button
@@ -13,6 +17,10 @@ function notifySWUpdates(reg) {
   });
 }
 
+/**
+ * Track service worker states
+ * @param {object} reg 
+ */
 function trackSWStates(reg) {
   reg.addEventListener('statechange', () => {
     if (this.state === 'installed') {
@@ -22,8 +30,8 @@ function trackSWStates(reg) {
 }
 
 /**
-   * This function registers the service worker
-  */
+ * Register service worker
+ */
 function registerServiceWorker() {
   navigator.serviceWorker.register('sw.js').then((reg) => {
     // refers to the SW that controls this page
@@ -59,6 +67,6 @@ function registerServiceWorker() {
 }
 
 /**
-   * Add service worker.
-   */
+ * register service worker
+ */
 registerServiceWorker();
