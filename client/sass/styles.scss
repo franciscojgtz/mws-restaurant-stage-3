@@ -18,7 +18,7 @@ video {
 }
 
 img {
-  width: 100%;
+  //width: 100%;
 }
 
 body {
@@ -303,11 +303,12 @@ nav[aria-label="breadcrumb"] {
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: 500;
+  z-index: 2;
 }
 
 .inside .map-container {
   background: blue none repeat scroll 0 0;
+  margin-top: 150px;
   height: 400px;
   width: 100%;
 }
@@ -316,6 +317,7 @@ nav[aria-label="breadcrumb"] {
   background-color: #ccc;
   height: 100%;
   width: 100%;
+  z-index: 1;
 }
 
 .inside .restaurant-container {
