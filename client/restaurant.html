@@ -67,7 +67,7 @@
     <!-- End reviews -->
     <!-- Add Reviews Form-->
     <section class="reviews-form-container" id="reviews-form-container">
-      <button class="add-review__button">Add Review</button>
+      <button id="add-review__button" class="add-review__button">Add Review</button>
       <form name="reviews-form" id="reviews-form" class="reviews-form" action="" method="post">
         <fieldset class="reviews-form__fieldset">
           <legend class="reviews-form__legend">Submit Review</legend>
@@ -77,7 +77,8 @@
           <input type="number" name="rating" class="reviews-form__rating-input" id="reviews-form__rating-input" min="1" max="5" required>
           <label for="reviews-form__comments-textarea" class="reviews-form__comments-label">Comments</label>
           <textarea class="reviews-form__comments-textarea" id="reviews-form__comments-textarea"required></textarea>
-          <input class="reviews-form__submit" type="submit" value="Submit">
+          <input class="reviews-form__submit" type="submit" value="Submit" />
+          <input id="reviews-form__reset" class="reviews-form__reset" type="reset" value="cancel" />
         </fieldset>
       </form>
       <!-- End Reviews Form-->

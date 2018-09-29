@@ -410,3 +410,23 @@ document.getElementById('button-favorite').addEventListener('click', () => {
     }
   });
 });
+
+document.querySelector('#add-review__button').addEventListener('click', (event) => {
+  // hide button
+  const button = document.querySelector('#add-review__button');
+  button.style.display = 'none';
+
+  // show form 
+  const reviewForm = document.querySelector('#reviews-form');
+  reviewForm.style.display = 'block';
+});
+
+document.querySelector('#reviews-form__reset').addEventListener('click', (event) => {
+  //hide form
+  const reviewForm = document.querySelector('#reviews-form');
+  reviewForm.style.display = 'none';
+
+  //show add review button
+  const button = document.querySelector('#add-review__button');
+  button.style.display = 'block';
+})
