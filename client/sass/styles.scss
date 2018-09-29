@@ -478,6 +478,22 @@ nav[aria-label="breadcrumb"] {
     font-size: 2.2rem;
     color: #008339;
   }
+
+  .add-review__button {
+    padding: 1rem 2rem;
+    display: block;
+    margin: 3rem auto;
+    border: none;
+    background-color: #006400;
+    color: #fff;
+    font-size: 2rem;
+    border-radius: 0.5rem;
+  }
+
+  .add-review__button:hover {
+    background-color: #004600;
+    cursor: pointer;
+  }
 }
 .reviews-form {
   width: 100%;
@@ -485,6 +501,8 @@ nav[aria-label="breadcrumb"] {
   margin: 2rem auto;
   background-color: #a6d6ee;
   border-radius: 2rem;
+  //hide form
+  display: none;
 
   .reviews-form__fieldset {
     border: 0;
