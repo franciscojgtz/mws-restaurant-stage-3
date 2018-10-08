@@ -23,7 +23,7 @@ var DBHelper = function () {
 
     /**
      * Fetch all restaurants. Get restaurants from cache and/or network
-     * @param {function} callback 
+     * @param {function} callback
      */
     value: function fetchRestaurants(callback) {
       var _this = this;

@@ -50,6 +50,7 @@ var initMap = function initMap() {
 var fetchRestaurantFromURL = function fetchRestaurantFromURL(callback) {
   if (self.restaurant) {
     // restaurant already fetched!
+    console.log('Restaurant already fetched');
     callback(null, self.restaurant);
     return;
   }
@@ -98,6 +99,27 @@ var fetchRestaurantFromURL = function fetchRestaurantFromURL(callback) {
       callback(null, restaurant);
     });
   }
+};
+
+/**
+ * Get a parameter by name from page URL.
+ * @param {string} name 
+ * @param {string} url 
+ */
+var getParameterByName = function getParameterByName(name, url) {
+  if (!url) {
+    url = window.location.href;
+  }
+  name = name.replace(/[\[\]]/g, '\\$&');
+  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+      results = regex.exec(url);
+  if (!results) {
+    return null;
+  }
+  if (!results[2]) {
+    return '';
+  }
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
 };
 
 /**
@@ -323,27 +345,6 @@ var fillBreadcrumb = function fillBreadcrumb() {
 };
 
 /**
- * Get a parameter by name from page URL.
- * @param {string} name 
- * @param {string} url 
- */
-var getParameterByName = function getParameterByName(name, url) {
-  if (!url) {
-    url = window.location.href;
-  }
-  name = name.replace(/[\[\]]/g, '\\$&');
-  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-      results = regex.exec(url);
-  if (!results) {
-    return null;
-  }
-  if (!results[2]) {
-    return '';
-  }
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
-};
-
-/**
  * Get image alt
  * @param {string or number} photograph 
  */
@@ -381,6 +382,8 @@ var getPhotoDescription = function getPhotoDescription(photograph) {
  */
 var createResponsiveImage = function createResponsiveImage(restaurant) {
   var image = document.createElement('img');
+  //TODO: Avoid repainting the image;
+  image.innerHTML = '';
   var pictureElement = document.getElementById('restaurant-img');
   var webPSource = document.createElement('source');
   var jpgSource = document.createElement('source');

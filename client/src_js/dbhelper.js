@@ -32,7 +32,7 @@ class DBHelper {
 
   /**
    * Fetch all restaurants. Get restaurants from cache and/or network
-   * @param {function} callback 
+   * @param {function} callback
    */
   static fetchRestaurants(callback) {
     this.showCachedRestaurants().then((cachedRestaurants) => {

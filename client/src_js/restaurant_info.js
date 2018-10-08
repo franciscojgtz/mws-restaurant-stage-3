@@ -46,6 +46,7 @@ const initMap = () => {
  */
 const fetchRestaurantFromURL = (callback) => {
   if (self.restaurant) { // restaurant already fetched!
+    console.log('Restaurant already fetched');
     callback(null, self.restaurant);
     return;
   }
@@ -93,6 +94,21 @@ const fetchRestaurantFromURL = (callback) => {
       callback(null, restaurant);
     });
   }
+};
+
+/**
+ * Get a parameter by name from page URL.
+ * @param {string} name 
+ * @param {string} url 
+ */
+const getParameterByName = (name, url) => {
+  if (!url) { url = window.location.href; }
+  name = name.replace(/[\[\]]/g, '\\$&');
+  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
+    results = regex.exec(url);
+  if (!results) { return null; }
+  if (!results[2]) { return ''; }
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
 };
 
 /**
@@ -310,21 +326,6 @@ const fillBreadcrumb = (restaurant = self.restaurant) => {
 };
 
 /**
- * Get a parameter by name from page URL.
- * @param {string} name 
- * @param {string} url 
- */
-const getParameterByName = (name, url) => {
-  if (!url) { url = window.location.href; }
-  name = name.replace(/[\[\]]/g, '\\$&');
-  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
-    results = regex.exec(url);
-  if (!results) { return null; }
-  if (!results[2]) { return ''; }
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
-};
-
-/**
  * Get image alt
  * @param {string or number} photograph 
  */
@@ -362,6 +363,8 @@ const getPhotoDescription = (photograph) => {
  */
 const createResponsiveImage = (restaurant) => {
   const image = document.createElement('img');
+  //TODO: Avoid repainting the image;
+  image.innerHTML = '';
   const pictureElement = document.getElementById('restaurant-img');
   const webPSource = document.createElement('source');
   const jpgSource = document.createElement('source');

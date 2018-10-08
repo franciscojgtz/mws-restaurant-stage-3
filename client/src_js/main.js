@@ -1,12 +1,8 @@
-// const idb = indexedDB;
-// const dbHelper = new DBHelper(idb);
-
-
-// restaurants holds the current restaurants being display
+// restaurants holds the current restaurants
 // allRestaurants holds all the restaurants in the app
-let restaurants,
-  neighborhoods,
-  cuisines;
+let restaurants;
+let neighborhoods;
+let cuisines;
 let newMap;
 let allRestaurants;
 const markers = [];
