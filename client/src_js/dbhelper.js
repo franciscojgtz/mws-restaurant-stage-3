@@ -1,6 +1,3 @@
-// import idb from 'idb';
-// const idb = require('idb');
-
 let reviewsSource = null;
 /**
  * Common database helper functions.
@@ -25,8 +22,8 @@ class DBHelper {
    */
   static get DATABASE_URL() {
     const port = 1337; // Change this to your server port
-    const baseURL = `http://localhost:${port}/`;
-    // const baseURL = 'https://desolate-mesa-90835.herokuapp.com/';
+    // const baseURL = `http://localhost:${port}/`;
+    const baseURL = 'https://desolate-mesa-90835.herokuapp.com/';
     return baseURL;
   }
 

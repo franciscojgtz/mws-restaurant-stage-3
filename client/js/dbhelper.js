@@ -4,9 +4,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-// import idb from 'idb';
-// const idb = require('idb');
-
 var reviewsSource = null;
 /**
  * Common database helper functions.
@@ -698,8 +695,8 @@ var DBHelper = function () {
     key: 'DATABASE_URL',
     get: function get() {
       var port = 1337; // Change this to your server port
-      var baseURL = 'http://localhost:' + port + '/';
-      // const baseURL = 'https://desolate-mesa-90835.herokuapp.com/';
+      // const baseURL = `http://localhost:${port}/`;
+      var baseURL = 'https://desolate-mesa-90835.herokuapp.com/';
       return baseURL;
     }
   }]);

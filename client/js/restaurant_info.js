@@ -44,6 +44,27 @@ var initMap = function initMap() {
 };
 
 /**
+ * Get a parameter by name from page URL.
+ * @param {string} name 
+ * @param {string} url 
+ */
+var getParameterByName = function getParameterByName(name, url) {
+  if (!url) {
+    url = window.location.href;
+  }
+  name = name.replace(/[\[\]]/g, '\\$&');
+  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+      results = regex.exec(url);
+  if (!results) {
+    return null;
+  }
+  if (!results[2]) {
+    return '';
+  }
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+};
+
+/**
  * Get current restaurant from page URL.
  * @param {function} callback 
  */
@@ -99,27 +120,6 @@ var fetchRestaurantFromURL = function fetchRestaurantFromURL(callback) {
       callback(null, restaurant);
     });
   }
-};
-
-/**
- * Get a parameter by name from page URL.
- * @param {string} name 
- * @param {string} url 
- */
-var getParameterByName = function getParameterByName(name, url) {
-  if (!url) {
-    url = window.location.href;
-  }
-  name = name.replace(/[\[\]]/g, '\\$&');
-  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-      results = regex.exec(url);
-  if (!results) {
-    return null;
-  }
-  if (!results[2]) {
-    return '';
-  }
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
 };
 
 /**
