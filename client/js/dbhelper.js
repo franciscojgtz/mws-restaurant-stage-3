@@ -54,7 +54,7 @@ var DBHelper = function () {
   }, {
     key: 'getRestaurantsFromNetwork',
     value: function getRestaurantsFromNetwork(callback) {
-      fetch(DBHelper.DATABASE_URL).then(function (response) {
+      fetch(DBHelper.DATABASE_URL + 'restaurants').then(function (response) {
         return response.json();
       }).then(function (fetchedRestaurants) {
         DBHelper.placeRestaurantsIntoIDB(fetchedRestaurants);
@@ -141,7 +141,7 @@ var DBHelper = function () {
       });
 
       // fetch reviews from network
-      fetch('http://localhost:1337/reviews/?restaurant_id=' + restaurantID).then(function (response) {
+      fetch(DBHelper.DATABASE_URL + 'reviews/?restaurant_id=' + restaurantID).then(function (response) {
         return response.json();
       }).then(function (fetchedReviews) {
         DBHelper.placeReviewsIntoIDB(fetchedReviews);
@@ -167,7 +167,7 @@ var DBHelper = function () {
     value: function postReview(review, callback) {
       var _this4 = this;
 
-      fetch('http://localhost:1337/reviews/', {
+      fetch(DBHelper.DATABASE_URL + 'reviews/', {
         method: 'post',
         headers: {
           'Content-Type': 'application/json; charset=utf-8'
@@ -197,7 +197,7 @@ var DBHelper = function () {
   }, {
     key: 'deleteReview',
     value: function deleteReview(id) {
-      fetch('http://localhost:1337/reviews/' + id, {
+      fetch(DBHelper.DATABASE_URL + 'reviews/' + id, {
         method: 'delete'
       }).then(function (res) {
         console.log(res);
@@ -213,7 +213,7 @@ var DBHelper = function () {
   }, {
     key: 'updateReview',
     value: function updateReview(id, review) {
-      fetch('http://localhost:1337/reviews/' + id, {
+      fetch(DBHelper.DATABASE_URL + 'reviews/' + id, {
         method: 'put',
         headers: {
           'Content-Type': 'application/json; charset=utf-8'
@@ -238,11 +238,12 @@ var DBHelper = function () {
   }, {
     key: 'updateIsFavortie',
     value: function updateIsFavortie(id, state, callback) {
-      fetch('http://localhost:1337/restaurants/' + id + '/?is_favorite=' + state, {
+      fetch(DBHelper.DATABASE_URL + 'restaurants/' + id + '/', {
         method: 'put',
         headers: {
           'Content-Type': 'application/json; charset=utf-8'
-        }
+        },
+        body: JSON.stringify({ is_favorite: state })
       }).then(function (res) {
         return res.json();
       }).catch(function (error) {
@@ -287,7 +288,8 @@ var DBHelper = function () {
   }, {
     key: 'getRestaurantFromNetwork',
     value: function getRestaurantFromNetwork(id, callback) {
-      fetch('http://localhost:1337/restaurants/' + id).then(function (response) {
+      console.log(DBHelper.DATABASE_URL + 'restaurants/' + id);
+      fetch(DBHelper.DATABASE_URL + 'restaurants/' + id).then(function (response) {
         return response.json();
       }).then(function (fetchedRestaurant) {
         DBHelper.placeRestaurantIntoIDB(fetchedRestaurant);
@@ -696,7 +698,9 @@ var DBHelper = function () {
     key: 'DATABASE_URL',
     get: function get() {
       var port = 1337; // Change this to your server port
-      return 'http://localhost:' + port + '/restaurants';
+      var baseURL = 'http://localhost:' + port + '/';
+      // const baseURL = 'https://desolate-mesa-90835.herokuapp.com/';
+      return baseURL;
     }
   }]);
 

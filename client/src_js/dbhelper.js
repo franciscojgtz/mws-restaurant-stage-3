@@ -25,7 +25,9 @@ class DBHelper {
    */
   static get DATABASE_URL() {
     const port = 1337; // Change this to your server port
-    return `http://localhost:${port}/restaurants`;
+    const baseURL = `http://localhost:${port}/`;
+    // const baseURL = 'https://desolate-mesa-90835.herokuapp.com/';
+    return baseURL;
   }
 
   /**
@@ -57,7 +59,7 @@ class DBHelper {
    * @param {function} callback 
    */
   static getRestaurantsFromNetwork(callback) {
-    fetch(DBHelper.DATABASE_URL)
+    fetch(`${DBHelper.DATABASE_URL}restaurants`)
       .then(response => response.json())
       .then((fetchedRestaurants) => {
         DBHelper.placeRestaurantsIntoIDB(fetchedRestaurants);
@@ -134,7 +136,7 @@ class DBHelper {
     });
 
     // fetch reviews from network
-    fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantID}`)
+    fetch(`${DBHelper.DATABASE_URL}reviews/?restaurant_id=${restaurantID}`)
       .then(response => response.json())
       .then((fetchedReviews) => {
         DBHelper.placeReviewsIntoIDB(fetchedReviews);
@@ -155,7 +157,7 @@ class DBHelper {
    * @param {object} review
    */
   static postReview(review, callback) {
-    fetch('http://localhost:1337/reviews/', {
+    fetch(`${DBHelper.DATABASE_URL}reviews/`, {
       method: 'post',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
@@ -183,7 +185,7 @@ class DBHelper {
    * @param {number} id
    */
   static deleteReview(id) {
-    fetch(`http://localhost:1337/reviews/${id}`, {
+    fetch(`${DBHelper.DATABASE_URL}reviews/${id}`, {
       method: 'delete',
     })
       .then((res) => { console.log(res); });
@@ -195,7 +197,7 @@ class DBHelper {
    * @param {object} review
    */
   static updateReview(id, review) {
-    fetch(`http://localhost:1337/reviews/${id}`, {
+    fetch(`${DBHelper.DATABASE_URL}reviews/${id}`, {
       method: 'put',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
@@ -214,11 +216,12 @@ class DBHelper {
    * @param {function} callback 
    */
   static updateIsFavortie(id, state, callback) {
-    fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${state}`, {
+    fetch(`${DBHelper.DATABASE_URL}restaurants/${id}/`, {
       method: 'put',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
       },
+      body: JSON.stringify({ is_favorite: state }),
     })
       .then(res => res.json())
       .catch((error) => {
@@ -257,7 +260,8 @@ class DBHelper {
    * @param {function} callback 
    */
   static getRestaurantFromNetwork(id, callback) {
-    fetch(`http://localhost:1337/restaurants/${id}`)
+    console.log(`${DBHelper.DATABASE_URL}restaurants/${id}`);
+    fetch(`${DBHelper.DATABASE_URL}restaurants/${id}`)
       .then(response => response.json())
       .then((fetchedRestaurant) => {
         DBHelper.placeRestaurantIntoIDB(fetchedRestaurant);
